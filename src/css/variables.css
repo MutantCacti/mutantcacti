@@ -1,0 +1,47 @@
+/* ============================================
+    variables.css - Design System
+    @author Claude Sonnet 4.5
+    ============================================ */
+
+:root {
+    /* Typography Scale (1.250 - Major Third) */
+    --text-xs: 0.8rem;
+    --text-sm: 0.889rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.266rem;
+    --text-2xl: 1.424rem;
+    --text-3xl: 1.602rem;
+    --text-4xl: 2.027rem;
+    --text-5xl: 2.566rem;
+    
+    /* Font Families */
+    --font-body: Georgia, serif;
+    --font-heading: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: Monaco, Consolas, "Courier New", monospace;
+    
+    /* Colors - Minimal Palette */
+    --color-text: #1a1a1a;
+    --color-text-light: #666;
+    --color-bg: #ffffff;
+    --color-accent: #2c5282;
+    --color-accent-light: #4a7ba7;
+    --color-border: #e5e5e5;
+    
+    /* Spacing Scale (based on 8px) */
+    --space-1: 0.5rem;   /* 8px */
+    --space-2: 1rem;     /* 16px */
+    --space-3: 1.5rem;   /* 24px */
+    --space-4: 2rem;     /* 32px */
+    --space-5: 3rem;     /* 48px */
+    --space-6: 4rem;     /* 64px */
+    --space-8: 6rem;     /* 96px */
+    
+    /* Layout */
+    --content-width: 65ch;  /* Optimal reading width */
+    --wide-width: 1200px;
+    --nav-height: 60px;
+    
+    /* Transitions */
+    --transition-base: 150ms ease;
+}

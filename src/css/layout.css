@@ -1,0 +1,55 @@
+/* ============================================
+    layout.css - Structural Patterns
+    @author Claude Sonnet 4.5
+    ============================================ */
+
+/* Skip to main content */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    padding: var(--space-2);
+    background: var(--color-accent);
+    color: white;
+    z-index: 1000;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Container - centers content with max-width */
+.container {
+    width: 100%;
+    max-width: var(--content-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+}
+
+.container--wide {
+    max-width: var(--wide-width);
+}
+
+/* Stack - vertical spacing */
+.stack > * + * {
+    margin-top: var(--space-4);
+}
+
+.stack--lg > * + * {
+    margin-top: var(--space-6);
+}
+
+/* Grid patterns */
+.grid-2col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-4);
+}
+
+/* Section spacing */
+section {
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-6);
+}
