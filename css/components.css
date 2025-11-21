@@ -22,6 +22,12 @@
     padding: 0 var(--space-3);
 }
 
+.nav__brand-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
 .nav__brand {
     font-family: var(--font-heading);
     font-size: var(--text-lg);
@@ -37,19 +43,52 @@
     padding-bottom: .3rem;
 }
 
-/* Eye symbol row */
-.eye-row {
-    display: flex;
-    gap: var(--space-4);
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--space-4);
+.nav__toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-2);
+    z-index: 101;
 }
 
-.eye-row__symbol {
-    height: 12rem;
-    width: auto;
-    max-width: 100%;
+.nav__toggle-icon {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text);
+    position: relative;
+    transition: background 0.3s;
+}
+
+.nav__toggle-icon::before,
+.nav__toggle-icon::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text);
+    transition: transform 0.3s;
+}
+
+.nav__toggle-icon::before {
+    top: -8px;
+}
+
+.nav__toggle-icon::after {
+    bottom: -8px;
+}
+
+.nav__toggle[aria-expanded="true"] .nav__toggle-icon {
+    background: transparent;
+}
+
+.nav__toggle[aria-expanded="true"] .nav__toggle-icon::before {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.nav__toggle[aria-expanded="true"] .nav__toggle-icon::after {
+    transform: rotate(-45deg) translate(6px, -6px);
 }
 
 .nav__list {
@@ -146,18 +185,53 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     :root {
         --text-4xl: 1.802rem;
         --text-3xl: 1.424rem;
         --space-8: 4rem;
     }
-    
+
+    .nav__toggle {
+        display: block;
+    }
+
     .nav__list {
-        gap: var(--space-2);
+        position: absolute;
+        top: var(--nav-height);
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--space-2) 0;
+        display: none;
     }
-    
+
+    .nav__list--open {
+        display: flex;
+    }
+
+    .nav__list li {
+        width: 100%;
+    }
+
     .nav__link {
-        font-size: var(--text-xs);
+        display: block;
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-base);
     }
+
+    .nav__link:hover,
+    .nav__link:focus {
+        background: var(--color-border);
+    }
+}
+
+/* Miscellaneous */
+.eye-row__symbol {
+    height: 12rem;
+    width: auto;
+    max-width: 100%;
 }
