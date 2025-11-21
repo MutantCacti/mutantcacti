@@ -16,17 +16,17 @@
     --text-5xl: 2.566rem;
     
     /* Font Families */
-    --font-body: Georgia, serif;
+    --font-body: Charter, Georgia, serif;
     --font-heading: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-mono: Monaco, Consolas, "Courier New", monospace;
     
     /* Colors - Minimal Palette */
-    --color-text: #1a1a1a;
-    --color-text-light: #666;
-    --color-bg: #ffffff;
-    --color-accent: #2c5282;
-    --color-accent-light: #4a7ba7;
-    --color-border: #e5e5e5;
+    --color-text: #8991dc;
+    --color-text-light: #23e398;
+    --color-bg: #1a1a1a;
+    --color-accent: #a6a8c1;
+    --color-accent-light: #8eb2ad;
+    --color-border: #d2e4dd;
     
     /* Spacing Scale (based on 8px) */
     --space-1: 0.5rem;   /* 8px */

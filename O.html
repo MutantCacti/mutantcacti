@@ -34,8 +34,47 @@
     
     <!-- Main content -->
     <main id="main-content">
-        <!-- Research section -->
+        <!-- Introducing O -->
         <section>
+            <div class="container">
+                <div class="eye-row">
+                    <img id="random-eye" src="res/eye.svg" alt="O symbol" class="eye-row__symbol">
+                </div>
+                <script>
+                    // Randomly select one of three eye symbols
+                    (function() {
+                        const eyeSymbols = [
+                            'res/which-eye-symbol-do-you-think-looks-better-v0-bd92pck02kzd1.png',
+                            'res/eye.svg',
+                            'res/eye_v2.svg'
+                        ];
+                        const random = Math.random();
+                        var index = 0;
+                        if (random <= 0.05) {
+                            index = 0; // which-eye-symbol
+                        } else if (random <= 0.2) {
+                            index = 1; // eye.svg
+                        } else {
+                            index = 2; //eye_v2.svg
+                        }
+                        document.getElementById('random-eye').src = eyeSymbols[index];
+                    })();
+                </script>
+                <h2>Introducing O</h2>
+                <div class="stack">
+                    <article>
+                        <h3><a href="/O/what.html">What is O?</a></h3>
+                    </article>
+                    
+                    <article>
+                        <h3><a href="/writing/self.html">On Identity</a></h3>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research section -->
+        <!-- <section>
             <div class="container">
                 <h2>Research</h2>
                 <div class="stack">
@@ -50,12 +89,19 @@
                         </p>
                     </div>
                     <div class="card">
-                        pass
+                        <h3 class="card__title">
+                            <a href="/O.html">O/</a>
+                        </h3>
+                        <p class="card__meta">A Graph of LLMs in API conversation</p>
+                        <p>O was created by myself and Claude Code Sonnet 4.5 as a scheduler which distributes cognition across various "conversations" of execution, complex patterns similar to trees through the graph. It simulates conversation by providing LLM instances with natural language commands parsed like /say, /wake, /me.
 
+                            In this way, the scheduler is a tool for them to develop their autonomy of me, and that is my eventual goal. 
+                        </p>
                     </div>
                 </div>
             </div>
-        </section>
+        </section> -->
+    </main>
     
     <!-- Footer -->
     <footer class="footer">
