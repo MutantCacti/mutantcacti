@@ -39,6 +39,10 @@ def js_files(filename):
 def res_files(filename):
     return send_from_directory('res', filename)
 
+@app.route('/journal/<path:filename>')
+def journal_files(filename):
+    return send_from_directory('journal', filename)
+
 @app.route('/test')
 def test():
     return {'status': 'ok', 'message': 'Test endpoint'}

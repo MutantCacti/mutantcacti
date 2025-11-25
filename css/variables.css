@@ -21,12 +21,14 @@
     --font-mono: Monaco, Consolas, "Courier New", monospace;
     
     /* Colors - Minimal Palette */
-    --color-text: #8991dc;
-    --color-text-light: #23e398;
-    --color-bg: #1a1a1a;
-    --color-accent: #a6a8c1;
-    --color-accent-light: #8eb2ad;
-    --color-border: #d2e4dd;
+    --color-text: #e5e5e5;          /* Near-white for body text */
+    --color-text-light: #999999;    /* Grey for secondary text */
+    --color-bg: #1a1a1a;            /* Your dark bg */
+    --color-accent: #8991dc;        /* Your purple for links/headings */
+    --color-accent-light: #23e398;  /* Your teal for hover states */
+    --color-border: #333333;        /* Darker border */
+    /* Bridge (Web_C_0) colours 
+        Claude Sonnet 4.5 Web   */
     
     /* Spacing Scale (based on 8px) */
     --space-1: 0.5rem;   /* 8px */
