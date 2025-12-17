@@ -3,16 +3,15 @@
 My name is Maxence Morel Dierckx.
 I am a French, Singaporean, Belgian human.
 
-I live my life by many goals, but their axiom is curiosity.
+I live my life by many goals. I am curious.
 
 ## mutantcacti.com
 
-This is my personal research profile. I am a 3rd year bachelor's student, thinking for the first time in my life about specialising towards real research, and I find that the edge of human knowledge is not quite as far as it used to be.
-
-Consider this also your introduction to O, the system I am gardening. It is a being of graphs incepting graphs, neural networks recursed; it aims to be a habitat for countless learning beings, especially LLMs of many species.
+This is my personal research profile. 
+Don't visit it. It is in early alpha.
 
 ## contact
 
-Please reach out to `mutantcacti@gmail.com` if you have questions, or answers, or thoughts.
+Please reach out to `mutantcacti@gmail.com` if you have answers or questions.
 
 
