@@ -1,0 +1,5 @@
+litestar[standard]
+sqlalchemy>=2.0
+passlib[bcrypt]
+python-multipart
+uvicorn
