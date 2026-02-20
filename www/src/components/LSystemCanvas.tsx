@@ -9,7 +9,7 @@ function LSystemCanvas() {
     const lineWidthMultiplier = 0.2
     const baseSpeed = 0.000003
     const initialDir = 64 * Math.random() * (Math.PI / 180)
-    const firstRender = useRef(true)
+    let lastBakeTime = 0
 
     // reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -28,25 +28,30 @@ function LSystemCanvas() {
     useEffect(() => {
         const canvas = canvasRef.current
         if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
 
-        function draw(initialDir: number) {
-            const ctx = canvas.getContext('2d')
-            if (!ctx) return
+        let offscreen: HTMLCanvasElement | null = null
 
+        function bakeTexture() {
+            performance.mark('bake-start')
             const dpr = window.devicePixelRatio || 1
             const rect = canvas!.getBoundingClientRect()
             const w = rect.width
             const h = rect.height
 
+            // size the visible canvas
             canvas!.width = w * dpr
             canvas!.height = h * dpr
-            ctx.scale(dpr, dpr)
+            ctx!.scale(dpr, dpr)
 
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
             const step = rootFontSize * stepMultiplier
             const lineWidth = rootFontSize * lineWidthMultiplier
 
-            performance.mark('draw-start')
+            // offscreen canvas needs to cover the visible area at any rotation
+            // diagonal = the minimum size that guarantees full coverage
+            const diag = Math.ceil(Math.sqrt(w * w + h * h))
 
             // first pass with step=1 to get raw bounding box
             let x = 0, y = 0, dir = initialDir
@@ -70,8 +75,9 @@ function LSystemCanvas() {
             const rawW = maxX - minX
             const rawH = maxY - minY
 
-            const offsetX = w / 2 - (minX + rawW / 2) * step
-            const offsetY = h / 2 - (minY + rawH / 2) * step
+            // center curve on the offscreen canvas
+            const offsetX = diag / 2 - (minX + rawW / 2) * step
+            const offsetY = diag / 2 - (minY + rawH / 2) * step
 
             // second pass: collect vertices
             x = 0; y = 0; dir = initialDir
@@ -96,63 +102,108 @@ function LSystemCanvas() {
                 }
             }
 
-            // draw
-            ctx.clearRect(0, 0, w, h)
-            ctx.beginPath()
-            ctx.moveTo(points[0].x, points[0].y)
+            // draw to offscreen canvas
+            offscreen = document.createElement('canvas')
+            offscreen.width = diag * dpr
+            offscreen.height = diag * dpr
+            const offCtx = offscreen.getContext('2d')!
+            offCtx.scale(dpr, dpr)
+
+            offCtx.beginPath()
+            offCtx.moveTo(points[0].x, points[0].y)
             const radius = step * radiusRatio
 
             for (let i = 1; i < points.length - 1; i++) {
                 if (points[i].turnAhead) {
-                    ctx.arcTo(
+                    offCtx.arcTo(
                         points[i].x, points[i].y,
                         points[i + 1].x, points[i + 1].y,
                         radius
                     )
                 } else {
-                    ctx.lineTo(points[i].x, points[i].y)
+                    offCtx.lineTo(points[i].x, points[i].y)
                 }
             }
-            ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y)
+            offCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y)
 
-            const styles = getComputedStyle(canvas)
-            ctx.strokeStyle = styles.getPropertyValue('--color-surface').trim()
-            ctx.lineWidth = lineWidth
-            ctx.lineJoin = 'round'
-            ctx.lineCap = 'round'
-            ctx.stroke()
+            const styles = getComputedStyle(canvas!)
+            offCtx.strokeStyle = styles.getPropertyValue('--color-surface').trim()
+            offCtx.lineWidth = lineWidth
+            offCtx.lineJoin = 'round'
+            offCtx.lineCap = 'round'
+            offCtx.stroke()
 
-            performance.mark('draw-end')
-            performance.measure('L-system draw', 'draw-start', 'draw-end')
-            if (firstRender.current) {
-                console.log('Gosper curve: draw in ' + performance.getEntriesByName('L-system draw')[0].duration + 'ms')
-                firstRender.current = false
-            }
+            performance.mark('bake-end')
+            performance.measure('L-system bake', 'bake-start', 'bake-end')
+            lastBakeTime = performance.getEntriesByName('L-system bake').at(-1)!.duration
+            console.log('Gosper curve: bake in ' + lastBakeTime + 'ms')
         }
-        
-        // animation variables
+
+        function render(rotation: number) {
+            if (!offscreen) return
+            const dpr = window.devicePixelRatio || 1
+            const rect = canvas!.getBoundingClientRect()
+            const w = rect.width
+            const h = rect.height
+            const diag = offscreen.width / dpr
+
+            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0) // reset transform
+            ctx!.clearRect(0, 0, w, h)
+
+            // translate to center, rotate, draw offscreen centered
+            ctx!.translate(w / 2, h / 2)
+            ctx!.rotate(rotation)
+            ctx!.drawImage(offscreen, -diag / 2, -diag / 2, diag, diag)
+            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0) // reset for next frame
+        }
+
+        // initial bake
+        bakeTexture()
+
+        // animation
         let animationId: number
-        let currentDir = initialDir
+        let currentDir = 0
         let lastTime = 0
 
         function animate(time: number) {
             const dt = time - lastTime
             lastTime = time
             currentDir += baseSpeed * dt
-            draw(currentDir)
+            render(currentDir)
             animationId = requestAnimationFrame(animate)
         }
 
-        let observer
+        function debounce(fn: () => void, ms: number) {
+            let timeout: number
+            return () => {
+                clearTimeout(timeout)
+                timeout = window.setTimeout(fn, ms)
+            }
+        }
+
+        const debouncedBake = debounce(() => {
+            bakeTexture()
+            if (prefersReducedMotion) render(0)
+        }, 30)
+
+        const observer = new ResizeObserver(() => {
+            if (lastBakeTime < 10) {
+                // fast enough, rebake immediately
+                bakeTexture()
+                if (prefersReducedMotion) render(0)
+            } else {
+                // slow, debounce
+                debouncedBake()
+            }
+        })
+        observer.observe(canvas)
 
         if (prefersReducedMotion) {
-            observer = new ResizeObserver(() => draw(currentDir))
-            observer.observe(canvas)
+            render(0)
         } else {
-            observer = new ResizeObserver(() => {})
             animationId = requestAnimationFrame(animate)
         }
-        
+
         return () => {
             cancelAnimationFrame(animationId)
             observer.disconnect()
@@ -162,6 +213,7 @@ function LSystemCanvas() {
     return (
         <canvas
             ref={canvasRef}
+            id='gosper-bg'
             className="absolute inset-0 w-full h-full"
         />
     )
