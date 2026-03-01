@@ -1,9 +1,9 @@
-import profileImage from '../assets/profile_image.png'
+import profileImage from '../assets/images/profile_image.png'
 import { SiGithub, SiInstagram, SiDiscord, SiLinkedin } from 'react-icons/si'
 
 export default function Profile() {
     return (
-        <div className='w-full flex flex-col items-center bg-surface border border-border rounded-lg p-4'>
+        <div className='w-full flex flex-col items-center bg-bg border border-border rounded-lg p-4'>
             <div className="w-full flex flex-col sm:flex-row justify-center gap-6 items-center">
                 <div className="relative rounded-full w-32 h-48 mr-2 overflow-hidden shrink-0">
                     <img
@@ -12,8 +12,8 @@ export default function Profile() {
                         className="object-cover w-full h-full brightness-90 sepia-[0.20] saturate-[1.3]"
                     />
                 </div>
-                <div className='mt-4 mr-2 text-center md:text-left'>
-                    <div className='flex flex-col md:flex-row gap-3 mb-4 items-center'>
+                <div className='mt-4 mr-2 text-center sm:text-left'>
+                    <div className='flex flex-col sm:flex-row gap-3 mb-4 items-center'>
                         <h1 className="text-accent-light text-2xl mr-4">Maxence Morel Dierckx</h1>
                         <div className='flex gap-3'>
                             <a href='https://github.com/MutantCacti' target='_blank' rel='noopener noreferrer' aria-label='GitHub' className='text-text-muted hover:text-accent-light transition-colors rounded-full'>
@@ -39,7 +39,7 @@ export default function Profile() {
                 <p className='mb-2'>I was born in Singapore. By eighteen I'd lived in Tokyo, Athens, Seoul, Mumbai, back to Singapore, then Minnesota. Now Scotland.</p>
                 <p className='mb-2'>I study computer science because it combines reasoning, logic, language, psychology, philosophy and science. I compose music, write poetry, and make games.</p>
                 <p className='mb-2'>I think a lot about what it means to teach something to think. I'm obsessed with recursion and the number 4.</p>
-                <p className='mb-2'>Why does it take lying to get the chance to be honest?</p>
+                <p className='mb-2'>Why does it so often take lying to get the chance to be honest?</p>
             </div>
         </div>
     )
