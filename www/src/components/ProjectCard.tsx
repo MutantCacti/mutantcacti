@@ -86,29 +86,35 @@ export default function ProjectCard({ title, description, tags, images, repoUrl 
                                 <img
                                     src={images[previewIndex].src}
                                     alt={images[previewIndex].alt}
-                                    className="max-w-full max-h-full rounded-lg"
+                                    className="max-w-full max-h-full rounded-lg bg-bg"
                                 />
                             </div>
                             {images.length > 1 && (
                                 <div
-                                    className="flex flex-col gap-2"
+                                    className="h-[80vh] overflow-hidden relative"
+                                    style={{ maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)' }}
                                     onClick={e => e.stopPropagation()}
                                 >
-                                    {images.map((img, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => setPreviewIndex(i)}
-                                            aria-label={img.alt}
-                                            aria-current={i === previewIndex ? 'true' : undefined}
-                                            className={`w-24 rounded overflow-hidden transition ${i === previewIndex ? 'ring-2 ring-accent-light' : 'opacity-60 hover:opacity-100'}`}
-                                        >
-                                            <img
-                                                src={img.src}
-                                                alt=""
-                                                className="w-full block"
-                                            />
-                                        </button>
-                                    ))}
+                                    <div
+                                        className="flex flex-col gap-2 transition-transform duration-300 px-1"
+                                        style={{ transform: `translateY(calc(40vh - ${previewIndex * (60 + 8)}px - 30px))` }}
+                                    >
+                                        {images.map((img, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setPreviewIndex(i)}
+                                                aria-label={img.alt}
+                                                aria-current={i === previewIndex ? 'true' : undefined}
+                                                className={`w-24 h-[60px] shrink-0 rounded overflow-hidden transition ${i === previewIndex ? 'ring-2 ring-accent-light' : 'opacity-60 hover:opacity-100'}`}
+                                            >
+                                                <img
+                                                    src={img.src}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
