@@ -37,3 +37,49 @@
 *:focus-visible {
     outline: 3px solid var(--color-highlight);
 }
+
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+@keyframes slide-next-mobile {
+    from { transform: translateX(60px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-prev-mobile {
+    from { transform: translateX(-60px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-next-desktop {
+    from { transform: translateY(60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-prev-desktop {
+    from { transform: translateY(-60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.slide-next {
+    animation: slide-next-mobile 250ms ease-out backwards;
+}
+
+.slide-prev {
+    animation: slide-prev-mobile 250ms ease-out backwards;
+}
+
+@media (min-width: 640px) {
+    .slide-next {
+        animation: slide-next-desktop 250ms ease-out backwards;
+    }
+    .slide-prev {
+        animation: slide-prev-desktop 250ms ease-out backwards;
+    }
+}
