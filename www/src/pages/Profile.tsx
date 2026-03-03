@@ -1,10 +1,11 @@
-import profileImage from '../assets/images/profile_image.png'
+import profileImage from '../assets/images/profile_image.webp'
 import { SiGithub, SiInstagram, SiDiscord, SiLinkedin } from 'react-icons/si'
+import Card from '../components/Card'
 
 export default function Profile() {
     return (
         <>
-            <div className='w-full flex flex-col items-center bg-bg border border-border rounded-lg p-4 pb-8'>
+            <Card className='w-full flex flex-col items-center pb-8'>
                 <div className="w-full flex flex-col sm:flex-row justify-center gap-6 items-center">
                     <div className="relative rounded-full w-32 h-48 mr-2 overflow-hidden shrink-0">
                         <img
@@ -36,14 +37,14 @@ export default function Profile() {
                         <p className='mt-2'>French and Belgian </p>
                     </div>
                 </div>
-            </div>
-            <div className='self-stretch rounded-lg bg-bg border border-border mt-6 text-accent-subtle p-8'>
+            </Card>
+            <Card className='self-stretch mt-6 text-accent-subtle p-8'>
                 <h2 className='text-accent-light text-2xl mb-4'>About Me</h2>
                 <p className='mb-2'>I was born in Singapore. By eighteen I'd lived in Tokyo, Athens, Seoul, Mumbai, back to Singapore, then Minnesota. Now Scotland.</p>
                 <p className='mb-2'>I study computer science because it combines reasoning, logic, language, psychology, philosophy and science. I compose music, write poetry, and make games.</p>
                 <p className='mb-2'>I think a lot about what it means to teach something to think. I'm obsessed with recursion and the number 4.</p>
                 <p className='mb-2'>Why does it so often take lying to get the chance to be honest?</p>
-            </div>
+            </Card>
         </>
     )
 }

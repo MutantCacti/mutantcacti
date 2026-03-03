@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { SiGithub } from 'react-icons/si'
 import { GoLock } from 'react-icons/go'
 import type { Project } from '../data/projects'
+import Tiltable from './Tiltable'
+import Card from './Card'
 
 type MediaItem =
     | { type: 'image'; src: string; alt: string }
     | { type: 'video'; youtubeId: string; title: string; alt: string }
 
-export default function ProjectCard({ title, description, tags, images, videos, repoUrl }: Project) {
+export default function ProjectCard({ title, year, description, tags, images, videos, repoUrl }: Project) {
     const media: MediaItem[] = [
         ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid })),
         ...(images ?? []).map(img => ({ type: 'image' as const, ...img })),
@@ -146,10 +149,10 @@ export default function ProjectCard({ title, description, tags, images, videos, 
     const currentItem = previewIndex !== null ? media[previewIndex] : null
 
     return (
-        <div className="w-full flex flex-col sm:flex-row gap-4 bg-bg border border-border rounded-lg p-4">
+        <Card className="w-full flex flex-col sm:flex-row gap-4">
             {thumbnail && media.length > 0 && (
                 <>
-                    <div className="sm:w-64 shrink-0 self-stretch">
+                    <Tiltable className="sm:w-64 shrink-0 self-stretch">
                         <button
                             ref={triggerRef}
                             onClick={() => setPreviewIndex(0)}
@@ -176,8 +179,8 @@ export default function ProjectCard({ title, description, tags, images, videos, 
                                 </svg>
                             </div>
                         </button>
-                    </div>
-                    {previewIndex !== null && currentItem && (
+                    </Tiltable>
+                    {previewIndex !== null && currentItem && createPortal(
                         <div
                             ref={modalRef}
                             role="dialog"
@@ -279,15 +282,21 @@ export default function ProjectCard({ title, description, tags, images, videos, 
                                     </div>
                                 </>
                             )}
-                        </div>
+                        </div>,
+                        document.body,
                     )}
                 </>
             )}
             <div className="flex-1 flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-accent-light text-xl">{title}</h2>
                     {repoUrl ? (
-                        <a href={repoUrl} target="_blank" rel="noopener noreferrer" aria-label={`${title} on GitHub`}
+                        <a href={repoUrl} target="_blank" rel="noopener noreferrer" className="text-accent-light text-xl hover:underline">{title}</a>
+                    ) : (
+                        <h2 className="text-accent-light text-xl">{title}</h2>
+                    )}
+                    <span className="text-text-muted text-sm">{year}</span>
+                    {repoUrl ? (
+                        <a href={repoUrl} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true"
                             className="text-text-muted hover:text-accent-light transition-colors">
                             <SiGithub size={18} />
                         </a>
@@ -306,6 +315,6 @@ export default function ProjectCard({ title, description, tags, images, videos, 
                     ))}
                 </div>
             </div>
-        </div>
+        </Card>
     )
 }

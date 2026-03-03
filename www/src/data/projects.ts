@@ -1,26 +1,31 @@
-import accessibubbleLanding from '../assets/images/accessibubble-screenshot-2.png'
-import accessibubbleAudit from '../assets/images/accessibubble-screenshot-1.png'
-import rotateFrames from '../assets/images/rotateai-1.png'
-import rotateValidation from '../assets/images/rotateai-2.png'
-import cinnamonConceptArt1 from '../assets/images/cinnamon-concept-art-1.jpg'
-import cinnamonConceptArt2 from '../assets/images/cinnamon-concept-art-2.jpg'
-import cinnamonConceptArt3 from '../assets/images/cinnamon-concept-art-3.jpg'
-import cinnamonCouplingBefore from '../assets/images/cinnamon-coupling-before.png'
-import cinnamonCouplingAfter from '../assets/images/cinnamon-coupling-after.png'
-import cinnamonGameplay from '../assets/images/cinnamon-gameplay.png'
-import cinnamonInitFlow from '../assets/images/cinnamon-init-flow.png'
-import cinnamonMusic from '../assets/images/cinnamon-music.png'
-import caretakerCanyon from '../assets/images/caretaker-canyon.jpg'
-import caretakerArcaneEgg from '../assets/images/caretaker-arcane-egg.jpg'
-import caretakerOceanPlane from '../assets/images/caretaker-ocean-plane.jpg'
-import caretakerGateway from '../assets/images/caretaker-gateway.jpg'
-import caretakerPillars from '../assets/images/caretaker-pillars.jpg'
-import caretakerEnemies from '../assets/images/caretaker-enemies.jpg'
-import caretakerCreatures from '../assets/images/caretaker-creatures.jpg'
-import caretakerPlatforms from '../assets/images/caretaker-platforms.jpg'
-import caretakerBlenderEgg from '../assets/images/caretaker-blender-egg.png'
-import caretakerBlenderRock from '../assets/images/caretaker-blender-rock.png'
-import caretakerBlenderLevel from '../assets/images/caretaker-blender-level.png'
+import accessibubbleLanding from '../assets/images/accessibubble-screenshot-2.webp'
+import accessibubbleAudit from '../assets/images/accessibubble-screenshot-1.webp'
+import rotateFrames from '../assets/images/rotateai-1.webp'
+import rotateValidation from '../assets/images/rotateai-2.webp'
+import cinnamonConceptArt1 from '../assets/images/cinnamon-concept-art-1.webp'
+import cinnamonConceptArt2 from '../assets/images/cinnamon-concept-art-2.webp'
+import cinnamonConceptArt3 from '../assets/images/cinnamon-concept-art-3.webp'
+import cinnamonCouplingBefore from '../assets/images/cinnamon-coupling-before.webp'
+import cinnamonCouplingAfter from '../assets/images/cinnamon-coupling-after.webp'
+import cinnamonGameplay from '../assets/images/cinnamon-gameplay.webp'
+import cinnamonInitFlow from '../assets/images/cinnamon-init-flow.webp'
+import cinnamonMusic from '../assets/images/cinnamon-music.webp'
+import caretakerCanyon from '../assets/images/caretaker-canyon.webp'
+import caretakerArcaneEgg from '../assets/images/caretaker-arcane-egg.webp'
+import caretakerOceanPlane from '../assets/images/caretaker-ocean-plane.webp'
+import caretakerGateway from '../assets/images/caretaker-gateway.webp'
+import caretakerPillars from '../assets/images/caretaker-pillars.webp'
+import caretakerEnemies from '../assets/images/caretaker-enemies.webp'
+import caretakerCreatures from '../assets/images/caretaker-creatures.webp'
+import caretakerPlatforms from '../assets/images/caretaker-platforms.webp'
+import caretakerBlenderEgg from '../assets/images/caretaker-blender-egg.webp'
+import caretakerBlenderRock from '../assets/images/caretaker-blender-rock.webp'
+import caretakerBlenderLevel from '../assets/images/caretaker-blender-level.webp'
+import mlqlGraph from '../assets/images/mlql-1.webp'
+import mlqlCode from '../assets/images/mlql-2.webp'
+import edutrackerStudent from '../assets/images/edutracker-student.webp'
+import edutrackerStudents from '../assets/images/edutracker-students.webp'
+import edutrackerAssessments from '../assets/images/edutracker-assessments.webp'
 
 export type ProjectImage = {
     src: string
@@ -35,6 +40,7 @@ export type ProjectVideo = {
 
 export type Project = {
     title: string
+    year: string
     description: string
     tags: string[]
     images?: ProjectImage[]
@@ -46,6 +52,7 @@ export type Project = {
 export const projects: Project[] = [
     {
         title: 'AI Rotate',
+        year: '2026',
         description: 'Research project using hybrid ML and deterministic algorithms to correct the orientation of sensor tags on free-ranging whales. My role: deploying the inference pipeline onto embedded hardware with power-efficient duty cycling.',
         tags: ['TFLite Micro', 'C', 'STM32', 'Python'],
         images: [
@@ -56,6 +63,7 @@ export const projects: Project[] = [
     },
     {
         title: 'Accessibubble',
+        year: '2025–',
         description: "Free online accessibility checker that crowdsources user testing data through public reviews and NLP. I organise a team of 18 and am the project's largest contributor.",
         tags: ['Accessibility', 'NLP', 'Full-Stack'],
         images: [
@@ -66,20 +74,21 @@ export const projects: Project[] = [
     },
     {
         title: 'Caretaker',
+        year: '2024',
         description: "Solo-built 3D platformer engine featuring 9-state movement mechanics, a combat and arena system, and a core 'shift' mechanic allowing traversal between 7 overlapping planes of reality for combination puzzle and parkour gameplay.",
         tags: ['Unity', 'C#', 'HLSL', 'Blender'],
         images: [
             { src: caretakerGateway, alt: 'Watercolour and ink concept art of a spiderlike cosmic being weaving threads of light inside of a universe, miniature compared to its size' },
             { src: caretakerCanyon, alt: 'Watercolour concept art of a desert canyon landscape with rock formations and caves' },
-            { src: caretakerArcaneEgg, alt: 'Ink concept art of arcane egg designs with variable straight, spiral, atomic, and tree patterns' },
             { src: caretakerOceanPlane, alt: 'Watercolour concept art of the ocean plane with tropical, alien, and shadow island themes' },
+            { src: caretakerBlenderRock, alt: 'Blender viewport showing a geometric rock base 3D model' },
+            { src: caretakerBlenderLevel, alt: 'Blender viewport showing the full test level blockout layout from above' },
+            { src: caretakerBlenderEgg, alt: 'Blender viewport showing a stylised egg model with procedural shader material' },
+            { src: caretakerArcaneEgg, alt: 'Ink concept art of arcane egg designs with variable straight, spiral, atomic, and tree patterns' },
             { src: caretakerPillars, alt: 'Ink sketches of pillar and ruins architecture concepts with player scale reference' },
             { src: caretakerEnemies, alt: 'Ink sketches of mechanical enemy designs, structures, and transport constructs' },
             { src: caretakerCreatures, alt: 'Ink sketches of bird-like Foulk creatures, floating altitude islands, and crystals' },
             { src: caretakerPlatforms, alt: 'Ink sketches of organic mushroom platforms, rattle staircases, and twisted tree formations' },
-            { src: caretakerBlenderEgg, alt: 'Blender viewport showing a stylised egg model with procedural shader material' },
-            { src: caretakerBlenderRock, alt: 'Blender viewport showing a geometric rock base 3D model' },
-            { src: caretakerBlenderLevel, alt: 'Blender viewport showing the full test level blockout layout from above' },
         ],
         videos: [
             { youtubeId: 'he8ICyA8iz4', title: 'Caretaker animated storyboard', alt: 'Animated storyboard introducing the Caretaker story' },
@@ -90,18 +99,67 @@ export const projects: Project[] = [
     },
     {
         title: 'Cinnamon',
+        year: '2025–',
         description: 'Top-down exploration and dialogue game set in a magic candy kingdom, built by a two-person team. My role: art design, music composition, and story, with contributions to engine architecture.',
-        tags: ['Unity', 'C#', 'REAPER', 'Game Design'],
+        tags: ['REAPER', 'Musescore', 'Game Design'],
         images: [
             { src: cinnamonConceptArt1, alt: 'Concept art of a frog character, coral formations, mushrooms, and small creatures' },
             { src: cinnamonGameplay, alt: 'Top-down gameplay screenshot with character, terrain, and dialogue box' },
+            { src: cinnamonMusic, alt: 'Music composition in REAPER DAW and MuseScore with MIDI tracks and orchestral score' },
             { src: cinnamonConceptArt2, alt: 'Ink sketches of candy-making equipment: ovens, cauldrons, lollipops, and sweets' },
             { src: cinnamonConceptArt3, alt: 'Ink sketches of gummy bears, a cinnamon roll, treasure chest, and flora' },
             { src: cinnamonCouplingBefore, alt: 'Architecture diagram showing tightly coupled manager dependencies' },
             { src: cinnamonCouplingAfter, alt: 'Refactored architecture with central event system decoupling all managers' },
             { src: cinnamonInitFlow, alt: 'Control flow diagram of game initialization and scene loading sequence' },
-            { src: cinnamonMusic, alt: 'Music composition in REAPER DAW and MuseScore with MIDI tracks and orchestral score' },
         ],
         featured: true,
+    },
+    {
+        title: 'city',
+        year: '2025–',
+        description: 'Generational simulator for LLM societies in a social media-like environment. Agents interact autonomously across generations via context inheritance, enabling ethnographic study of emergent behaviour without human intervention.',
+        tags: ['Python', 'LLM', 'Simulation'],
+        repoUrl: 'https://github.com/MutantCacti/city',
+        featured: false,
+    },
+    {
+        title: 'mlql',
+        year: '2026',
+        description: 'Graph-based cellular automata simulator with evolutionary rule learning. Nodes evolve through configurable transformation rules, with an evolutionary algorithm to discover optimal rule sets.',
+        tags: ['C', 'Python', 'Simulation'],
+        images: [
+            { src: mlqlGraph, alt: 'Graph simulation at step 37 with directed node network and oscillating cell and edge count plots' },
+            { src: mlqlCode, alt: 'VS Code editor showing mlql task scoring code with project file structure' },
+        ],
+        repoUrl: 'https://github.com/MutantCacti/mlql',
+        featured: false,
+    },
+    {
+        title: 'kwami',
+        year: '2025',
+        description: 'Keylogger with integrated data exfiltration via disguised HTTP headers, developed during a security internship at Orange Cyberdefense under the mentorship of a reverse engineer.',
+        tags: ['C', 'Python', 'Security'],
+        featured: false,
+    },
+    {
+        title: 'EduTracker',
+        year: '2023',
+        description: 'School assessment platform with role-based interfaces for students, teachers, and admins. Automatically generates PDF assessments from question banks and tracks per-student performance over time to target learning gaps.',
+        tags: ['PHP', 'SQL', 'Full-Stack'],
+        images: [
+            { src: edutrackerStudent, alt: 'Teacher view of individual student performance with score chart and assessment history' },
+            { src: edutrackerStudents, alt: 'Teacher view of class student list with recent scores, averages, and best topics' },
+            { src: edutrackerAssessments, alt: 'Teacher view of assessment list with scores, dates, and completion status' },
+        ],
+        repoUrl: 'https://github.com/MutantCacti/edutracker',
+        featured: false,
+    },
+    {
+        title: 'grav2d',
+        year: '2022',
+        description: '3D gravity simulator rendered in 2D. Create solar systems by spawning planets that respond to gravitational forces, with adjustable simulation speed and camera controls.',
+        tags: ['Unity', 'C#', 'Physics'],
+        repoUrl: 'https://github.com/MutantCacti/grav2d',
+        featured: false,
     },
 ]

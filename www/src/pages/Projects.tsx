@@ -3,7 +3,6 @@ import { projects } from '../data/projects'
 import ProjectCard from '../components/ProjectCard'
 
 export default function Projects() {
-    const featured = projects.filter(p => p.featured)
     const [activeIndex, setActiveIndex] = useState(0)
     const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
@@ -12,7 +11,7 @@ export default function Projects() {
             const atTop = window.scrollY <= 0
             const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1
             if (atTop) { setActiveIndex(0); return }
-            if (atBottom) { setActiveIndex(cardRefs.current.length - 1); return }
+            if (atBottom) { setActiveIndex(projects.length - 1); return }
 
             const viewCenter = window.innerHeight / 2
             let closest = 0
@@ -34,7 +33,7 @@ export default function Projects() {
         updateActive()
         window.addEventListener('scroll', updateActive, { passive: true })
         return () => window.removeEventListener('scroll', updateActive)
-    }, [featured.length])
+    }, [])
 
     function scrollTo(index: number) {
         cardRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -42,8 +41,9 @@ export default function Projects() {
 
     return (
         <div className="w-full relative">
+            <h1 className="sr-only">Projects</h1>
             <div className="flex flex-col gap-4">
-                {featured.map((project, i) => (
+                {projects.map((project, i) => (
                     <div
                         key={project.title}
                         ref={el => { cardRefs.current[i] = el }}
@@ -52,14 +52,15 @@ export default function Projects() {
                     </div>
                 ))}
             </div>
-            {featured.length > 1 && (
+            {projects.length > 1 && (
                 <nav
-                    className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col gap-3"
+                    className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col gap-3 items-center"
                     aria-label="Project navigation"
                 >
-                    {featured.map((project, i) => (
+                    {projects.map((project, i) => (
                         <button
                             key={project.title}
+                            tabIndex={-1}
                             onClick={() => scrollTo(i)}
                             aria-label={`Go to ${project.title}`}
                             aria-current={i === activeIndex ? 'true' : undefined}

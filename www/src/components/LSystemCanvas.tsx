@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react'
 import LSystem from 'lindenmayer'
 
+const PARALLAX_RATE = 0.08 // 0 = fixed, 1 = scrolls with content
+
 function LSystemCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const iterations = 5
@@ -51,7 +53,9 @@ function LSystemCanvas() {
 
             // offscreen canvas needs to cover the visible area at any rotation
             // diagonal = the minimum size that guarantees full coverage
+            // extra buffer for parallax scroll offset
             const diag = Math.ceil(Math.sqrt(w * w + h * h))
+            const size = PARALLAX_RATE > 0 ? Math.ceil(diag * 1.4) : diag
 
             // first pass with step=1 to get raw bounding box
             let x = 0, y = 0, dir = initialDir
@@ -76,8 +80,8 @@ function LSystemCanvas() {
             const rawH = maxY - minY
 
             // center curve on the offscreen canvas
-            const offsetX = diag / 2 - (minX + rawW / 2) * step
-            const offsetY = diag / 2 - (minY + rawH / 2) * step
+            const offsetX = size / 2 - (minX + rawW / 2) * step
+            const offsetY = size / 2 - (minY + rawH / 2) * step
 
             // second pass: collect vertices
             x = 0; y = 0; dir = initialDir
@@ -104,8 +108,8 @@ function LSystemCanvas() {
 
             // draw to offscreen canvas
             offscreen = document.createElement('canvas')
-            offscreen.width = diag * dpr
-            offscreen.height = diag * dpr
+            offscreen.width = size * dpr
+            offscreen.height = size * dpr
             const offCtx = offscreen.getContext('2d')!
             offCtx.scale(dpr, dpr)
 
@@ -139,21 +143,21 @@ function LSystemCanvas() {
             console.log('Gosper curve: bake in ' + lastBakeTime + 'ms')
         }
 
-        function render(rotation: number) {
+        function render(rotation: number, scrollOffset: number = 0) {
             if (!offscreen) return
             const dpr = window.devicePixelRatio || 1
             const rect = canvas!.getBoundingClientRect()
             const w = rect.width
             const h = rect.height
-            const diag = offscreen.width / dpr
+            const s = offscreen.width / dpr
 
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0) // reset transform
             ctx!.clearRect(0, 0, w, h)
 
-            // translate to center, rotate, draw offscreen centered
-            ctx!.translate(w / 2, h / 2)
+            // translate to center with parallax offset, rotate, draw offscreen centered
+            ctx!.translate(w / 2, h / 2 - scrollOffset)
             ctx!.rotate(rotation)
-            ctx!.drawImage(offscreen, -diag / 2, -diag / 2, diag, diag)
+            ctx!.drawImage(offscreen, -s / 2, -s / 2, s, s)
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0) // reset for next frame
         }
 
@@ -164,12 +168,11 @@ function LSystemCanvas() {
         let animationId: number
         let currentDir = 0
         let lastTime = 0
-
         function animate(time: number) {
             const dt = time - lastTime
             lastTime = time
             currentDir += baseSpeed * dt
-            render(currentDir)
+            render(currentDir, window.scrollY * PARALLAX_RATE)
             animationId = requestAnimationFrame(animate)
         }
 
@@ -198,6 +201,8 @@ function LSystemCanvas() {
         })
         observer.observe(canvas)
 
+        // reduced-motion: render once, no animation, no parallax
+        let onScroll: (() => void) | null = null
         if (prefersReducedMotion) {
             render(0)
         } else {
@@ -207,6 +212,7 @@ function LSystemCanvas() {
         return () => {
             cancelAnimationFrame(animationId)
             observer.disconnect()
+            if (onScroll) window.removeEventListener('scroll', onScroll)
         }
     }, [])
 
@@ -214,7 +220,7 @@ function LSystemCanvas() {
         <canvas
             ref={canvasRef}
             id='gosper-bg'
-            className="absolute inset-0 w-full h-full"
+            className="fixed inset-0 w-full h-full"
         />
     )
 }
