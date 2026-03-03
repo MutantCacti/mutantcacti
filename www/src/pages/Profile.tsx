@@ -1,5 +1,6 @@
 import profileImage from '../assets/images/profile_image.webp'
 import { SiGithub, SiInstagram, SiDiscord, SiLinkedin } from 'react-icons/si'
+import { HiOutlineDownload } from 'react-icons/hi'
 import Card from '../components/Card'
 
 export default function Profile() {
@@ -35,6 +36,11 @@ export default function Profile() {
                         <p className='text-text'>Computer Science Student <span className='mx-1'>•</span> University of St Andrews</p>
                         <p className='mt-2'>Research Intern for the AI Rotate Project</p>
                         <p className='mt-2'>French and Belgian </p>
+                        <div className='flex gap-4 mt-4 text-sm'>
+                            <a href='mailto:mutantcacti@gmail.com' className='text-text-muted hover:text-accent-light transition-colors rounded-sm'>mutantcacti@gmail.com</a>
+                            <span className='text-text-muted'>•</span>
+                            <a href='https://docs.google.com/document/d/15s2jYQEbHIwdhUxZAYHXV76J6STfO8PvjGnkocat_XU/export?format=pdf' target='_blank' rel='noopener noreferrer' className='text-text-muted hover:text-accent-light transition-colors inline-flex items-center gap-1 rounded-sm'>Resume <HiOutlineDownload size={14} /></a>
+                        </div>
                     </div>
                 </div>
             </Card>
