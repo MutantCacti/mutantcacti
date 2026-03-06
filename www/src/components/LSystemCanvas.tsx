@@ -2,13 +2,20 @@ import { useRef, useEffect } from 'react'
 import LSystem from 'lindenmayer'
 
 const PARALLAX_RATE = 0.08 // 0 = fixed, 1 = scrolls with content
+let accentMode = false
+;(window as any).toggleGosper = () => {
+    accentMode = !accentMode
+    ;(window as any).__gosperRebake?.()
+    console.log('Gosper:', accentMode ? 'accent' : 'surface')
+}
 
 function LSystemCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const iterations = 5
     const stepMultiplier = 1
     const radiusRatio = 0.25
-    const lineWidthMultiplier = 0.2
+    const lineWidthMultiplier = 0.161
+    const accentWidthMultiplier = 1.618
     const baseSpeed = 0.000003
     const initialDir = 64 * Math.random() * (Math.PI / 180)
     let lastBakeTime = 0
@@ -49,7 +56,7 @@ function LSystemCanvas() {
 
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
             const step = rootFontSize * stepMultiplier
-            const lineWidth = rootFontSize * lineWidthMultiplier
+            const lineWidth = rootFontSize * lineWidthMultiplier * (accentMode ? accentWidthMultiplier : 1.0)
 
             // offscreen canvas needs to cover the visible area at any rotation
             // diagonal = the minimum size that guarantees full coverage
@@ -131,7 +138,7 @@ function LSystemCanvas() {
             offCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y)
 
             const styles = getComputedStyle(canvas!)
-            offCtx.strokeStyle = styles.getPropertyValue('--color-surface').trim()
+            offCtx.strokeStyle = styles.getPropertyValue(accentMode ? '--color-accent-light' : '--color-surface').trim()
             offCtx.lineWidth = lineWidth
             offCtx.lineJoin = 'round'
             offCtx.lineCap = 'round'
@@ -163,6 +170,9 @@ function LSystemCanvas() {
 
         // initial bake
         bakeTexture()
+
+        // dev toggle: call toggleGosper() in console
+        ;(window as any).__gosperRebake = bakeTexture
 
         // animation
         let animationId: number

@@ -30,12 +30,14 @@ import edutrackerAssessments from '../assets/images/edutracker-assessments.webp'
 export type ProjectImage = {
     src: string
     alt: string
+    credit?: string
 }
 
 export type ProjectVideo = {
     youtubeId: string
     title: string
     alt: string
+    credit?: string
 }
 
 export type Project = {
@@ -46,6 +48,7 @@ export type Project = {
     images?: ProjectImage[]
     videos?: ProjectVideo[]
     repoUrl?: string
+    credit?: string
     featured: boolean
 }
 
@@ -55,6 +58,7 @@ export const projects: Project[] = [
         year: '2026',
         description: 'Research project using hybrid ML and deterministic algorithms to correct the orientation of sensor tags on free-ranging whales. My role: deploying the inference pipeline onto embedded hardware with power-efficient duty cycling.',
         tags: ['TFLite Micro', 'C', 'STM32', 'Python'],
+        credit: 'Dr Juan Ye, Prof Patrick Miller, George Sato, Han Yin',
         images: [
             { src: rotateFrames, alt: 'Diagram showing coordinate frame transformations from Earth frame to whale frame to tag frame' },
             { src: rotateValidation, alt: 'Depth and whale-frame acceleration plots with surface validation intervals highlighted' },
@@ -64,11 +68,12 @@ export const projects: Project[] = [
     {
         title: 'Accessibubble',
         year: '2025–',
-        description: "Free online accessibility checker that crowdsources user testing data through public reviews and NLP. I organise a team of 18 and am the project's largest contributor.",
+        description: 'Free online accessibility checker that crowdsources user testing data through public reviews and NLP.',
         tags: ['Accessibility', 'NLP', 'Full-Stack'],
+        credit: 'ac516, ajp34, as696, ep247, eb379, gg89, irv1, kc237, ky39, mtmd1, mm586, pm272, pt76, rh265, wf27, teym1, tfb6, vh46, zlt1',
         images: [
-            { src: accessibubbleLanding, alt: 'Accessibubble landing page with search bar and recent audit results' },
-            { src: accessibubbleAudit, alt: 'Accessibubble audit results showing accessibility score and violations' },
+            { src: accessibubbleLanding, alt: 'Accessibubble landing page with search bar and recent audit results', credit: '@teym1, Thomas Yonaha-McCoy, Claude Opus 4.5:4.6' },
+            { src: accessibubbleAudit, alt: 'Accessibubble audit results showing accessibility score and violations', credit: '@teym1, Thomas Yonaha-McCoy, Claude Opus 4.5:4.6' },
         ],
         featured: true,
     },
@@ -77,6 +82,7 @@ export const projects: Project[] = [
         year: '2024',
         description: "Solo-built 3D platformer engine featuring 9-state movement mechanics, a combat and arena system, and a core 'shift' mechanic allowing traversal between 7 overlapping planes of reality for combination puzzle and parkour gameplay.",
         tags: ['Unity', 'C#', 'HLSL', 'Blender'],
+        credit: '@KingLavaCactus, Toby Davies',
         images: [
             { src: caretakerGateway, alt: 'Watercolour and ink concept art of a spiderlike cosmic being weaving threads of light inside of a universe, miniature compared to its size' },
             { src: caretakerCanyon, alt: 'Watercolour concept art of a desert canyon landscape with rock formations and caves' },
@@ -102,6 +108,7 @@ export const projects: Project[] = [
         year: '2025–',
         description: 'Top-down exploration and dialogue game set in a magic candy kingdom, built by a two-person team. My role: art design, music composition, and story, with contributions to engine architecture.',
         tags: ['REAPER', 'Musescore', 'Game Design'],
+        credit: '@KingLavaCactus, BerryBitStudio',
         images: [
             { src: cinnamonConceptArt1, alt: 'Concept art of a frog character, coral formations, mushrooms, and small creatures' },
             { src: cinnamonGameplay, alt: 'Top-down gameplay screenshot with character, terrain, and dialogue box' },
@@ -146,6 +153,7 @@ export const projects: Project[] = [
         year: '2023',
         description: 'School assessment platform with role-based interfaces for students, teachers, and admins. Automatically generates PDF assessments from question banks and tracks per-student performance over time to target learning gaps.',
         tags: ['PHP', 'SQL', 'Full-Stack'],
+        credit: 'Mr Peter Wynd',
         images: [
             { src: edutrackerStudent, alt: 'Teacher view of individual student performance with score chart and assessment history' },
             { src: edutrackerStudents, alt: 'Teacher view of class student list with recent scores, averages, and best topics' },

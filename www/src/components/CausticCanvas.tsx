@@ -31,15 +31,27 @@ const HUE_SHIFT = 0                // degrees — no hue rotation, just intensit
 const HUE_SHIFT_SAT_BOOST = 5.0   // saturation multiplier for shifted layer (>1 = more vivid)
 const HUE_SHIFT_LIT_DROP = 0.8    // lightness multiplier for shifted layer (<1 = darker)
 const HUE_SHIFT_STRENGTH = 1      // max alpha of shifted layer in empty areas
-const INVERSION_SENSITIVITY = 0.8  // how quickly density suppresses the shift
+const INVERSION_SENSITIVITY = 0.8 
+ // how quickly density suppresses the shift
+
+// --- Density glow ---
+const GLOW_BRIGHTNESS = 0.04       // maps density to glow intensity
+const GLOW_RGB: [number, number, number] = [255, 170, 60]   // campfire gold
+// Transfer function: density (0-1) → glow intensity (0-1)
+// Swap this out for any shape you want
+const glowTransfer = (x: number): number => {
+    return 1 / (1 + Math.exp(-12 * (x - 0.4)))
+}
 
 // --- Colour system ---
 
 const GRADIENT_ALPHA = 1        // global alpha for gradient fills
 const BAND_WARP_AMP = 10        // max warp displacement in CSS px
-const BAND_COL_WIDTH = 1        // column width for warped rendering (px)
+const BAND_COL_WIDTH = 28        // column width for warped rendering (px)
 const GRADIENT_DRIFT_SPEED = 0.02  // vertical drift rate from flow
 const GRADIENT_WARP_SPEED = 0.5    // warp phase accumulation rate from flow
+const NOISE_AMP = 2               // max noise displacement in CSS px
+const NOISE_SCROLL_SPEED = 0.8     // upward scroll rate
 
 // Each band: h, s, l (HSL colour), alpha (0-1), pos (0=top, 1=bottom), width (fraction of canvas height), sharpness (0=diffuse, 1=hard), warpPhase (radians)
 const GRADIENT_BANDS = [
@@ -48,6 +60,7 @@ const GRADIENT_BANDS = [
     { h: 160, s: 65, l: 70, alpha: 0.2, pos: 0.45, width: 0.4, sharpness: 0.1, warpPhase: 1.0, warpFreq: 0.02 },    // lighter turquoise
     { h: 350, s: 70, l: 80, alpha: 0.3, pos: 0.25, width: 0.4, sharpness: 0, warpPhase: 0.0, warpFreq: 0.03 },      // rose-white
     { h: 190, s: 50, l: 60, alpha: 0.3, pos: 0.1, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01 },      // light cyan
+    { h: 150, s: 100, l: 40, alpha: 0.1, pos: 0.06, width: 0.6, sharpness: 0.01, warpPhase: 1273618273612.0, warpFreq: 0.1 },      // accent highlight
 ]
 
 // Per-band contour colours [h, s, l]
@@ -78,6 +91,7 @@ type CausticCanvasProps = {
     className?: string
     flow?: FlowFn
     waves?: WaveConfig[]
+    gradientHeight?: number  // virtual height for gradient layout (CSS px). If set, bands are positioned as if the canvas were this tall.
 }
 
 type Particle = {
@@ -98,7 +112,9 @@ function drawGradients(
     hueOffset: number = 0,
     satMul: number = 1,
     litMul: number = 1,
+    gradH?: number,
 ) {
+    const gh = gradH ?? h  // virtual height for band layout
     ctx.save()
     ctx.globalCompositeOperation = 'lighter'
 
@@ -108,8 +124,8 @@ function drawGradients(
         // flow at band center → vertical drift (accumulates from 0 via drift)
         const fdy = FLOW_SINK.y - band.pos
         const fdLen = Math.sqrt((FLOW_SINK.x - 0.5) ** 2 + fdy * fdy) || 0.001
-        const baseCenterY = h * (band.pos + (fdy / fdLen) * drift * GRADIENT_DRIFT_SPEED)
-        const halfH = h * 0.5 * band.width
+        const baseCenterY = gh * (band.pos + (fdy / fdLen) * drift * GRADIENT_DRIFT_SPEED)
+        const halfH = gh * 0.5 * band.width
 
         const hue = (band.h + hueOffset + 360) % 360
         const sat = Math.min(100, band.s * satMul)
@@ -135,7 +151,13 @@ function drawGradients(
             const dy = (Math.sin(nx * f + p) * 0.6
                       + Math.sin(nx * f * 0.37 + p * 0.7 + 1.7) * 0.4) * BAND_WARP_AMP
 
-            const centerY = baseCenterY + dy
+            // scrolling noise — 3 layered sines at irrational ratios, scrolling upward
+            const ns = drift * NOISE_SCROLL_SPEED
+            const ndy = (Math.sin(nx * 0.031 + ns * 0.7 + i * 2.1) * 0.5
+                       + Math.sin(nx * 0.071 - ns * 1.1 + i * 0.8) * 0.3
+                       + Math.sin(nx * 0.127 + ns * 0.5 + i * 3.4) * 0.2) * NOISE_AMP
+
+            const centerY = baseCenterY + dy + ndy
             const grad = ctx.createLinearGradient(0, centerY - halfH, 0, centerY + halfH)
             grad.addColorStop(0, c0)
             grad.addColorStop(edge, c1)
@@ -350,7 +372,7 @@ function spawnParticle(w: number, h: number, scatter = false): Particle {
     }
 }
 
-export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = WAVES }: CausticCanvasProps) {
+export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = WAVES, gradientHeight }: CausticCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
@@ -383,6 +405,9 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
         let visitBuf: Uint8Array | null = null
         let fwdBuf: Float32Array | null = null
         let bwdBuf: Float32Array | null = null
+        let glowBuf: HTMLCanvasElement | null = null
+        let glowCtx: CanvasRenderingContext2D | null = null
+        let glowImgData: ImageData | null = null
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
         const card = canvas.closest('.overflow-hidden') ?? canvas
 
@@ -426,6 +451,12 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
             maskBuf.height = fieldH
             maskCtx = maskBuf.getContext('2d')!
             maskImgData = maskCtx.createImageData(fieldW, fieldH)
+
+            glowBuf = document.createElement('canvas')
+            glowBuf.width = fieldW
+            glowBuf.height = fieldH
+            glowCtx = glowBuf.getContext('2d')!
+            glowImgData = glowCtx.createImageData(fieldW, fieldH)
 
             const cellCount = (fieldW - 1) * (fieldH - 1)
             caseBuf = new Uint8Array(cellCount)
@@ -509,9 +540,13 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
                     : lifeFrac > 0.75 ? (1 - lifeFrac) / 0.25
                     : 1.0
 
-                // stamp current position only (trail creates temporal smear via persistence)
+                // stamp with warp displacement matching gradient noise
+                const ns = driftAccum * NOISE_SCROLL_SPEED
+                const warpDy = (Math.sin(p.x * 0.031 + ns * 0.7) * 0.5
+                              + Math.sin(p.x * 0.071 - ns * 1.1) * 0.3
+                              + Math.sin(p.x * 0.127 + ns * 0.5) * 0.2) * NOISE_AMP
                 const fx = p.x / fScale
-                const fy = p.y / fScale
+                const fy = (p.y + warpDy) / fScale
 
                 const minX = Math.max(0, Math.floor(fx - bR))
                 const maxX = Math.min(fieldW - 1, Math.ceil(fx + bR))
@@ -537,7 +572,28 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
 
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
             ctx!.clearRect(0, 0, w, h)
-            drawGradients(ctx!, w, h, GRADIENT_ALPHA, time, driftAccum)
+            drawGradients(ctx!, w, h, GRADIENT_ALPHA, time, driftAccum, 0, 1, 1, gradientHeight)
+
+            // === LAYER 1.5: Density glow ===
+            // Soft diffuse highlight where particles concentrate
+            const glowData = glowImgData!.data
+            const [gr, gg, gb] = GLOW_RGB
+            for (let i = 0; i < field.length; i++) {
+                const raw = field[i] * GLOW_BRIGHTNESS
+                const v = glowTransfer(raw)
+                const a = Math.floor(v * 255)
+                glowData[i * 4] = gr
+                glowData[i * 4 + 1] = gg
+                glowData[i * 4 + 2] = gb
+                glowData[i * 4 + 3] = a
+            }
+            glowCtx!.putImageData(glowImgData!, 0, 0)
+
+            ctx!.save()
+            ctx!.globalCompositeOperation = 'lighter'
+            ctx!.imageSmoothingEnabled = true
+            ctx!.drawImage(glowBuf!, 0, 0, fieldW, fieldH, 0, 0, w, h)
+            ctx!.restore()
 
             // === LAYER 2: Density-inverted hue shift ===
             // Where particles are absent, the gradient shifts toward its complement.
@@ -559,7 +615,7 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
             // Draw hue-shifted gradients to shift buffer (boosted saturation, dropped lightness)
             shiftCtx!.setTransform(dpr, 0, 0, dpr, 0, 0)
             shiftCtx!.clearRect(0, 0, w, h)
-            drawGradients(shiftCtx!, w, h, GRADIENT_ALPHA, time, driftAccum, HUE_SHIFT, HUE_SHIFT_SAT_BOOST, HUE_SHIFT_LIT_DROP)
+            drawGradients(shiftCtx!, w, h, GRADIENT_ALPHA, time, driftAccum, HUE_SHIFT, HUE_SHIFT_SAT_BOOST, HUE_SHIFT_LIT_DROP, gradientHeight)
 
             // Carve contour lines out of the shifted layer (destination-out)
             // The contours become absence — the original gradient showing through the complement

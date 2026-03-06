@@ -6,6 +6,7 @@ type HilbertCanvasProps = {
     rotation?: number
     iterations?: number
     strokeMultiplier?: number
+    scaleBase?: 'width' | 'height'  // which dimension drives tile size (default: 'width')
 }
 
 const GRADIENT_BANDS = [
@@ -80,7 +81,7 @@ function drawGradients(ctx: CanvasRenderingContext2D, w: number, h: number, time
     ctx.restore()
 }
 
-export default function HilbertCanvas({ className, rotation = 0, iterations = 6, strokeMultiplier = 0.1 }: HilbertCanvasProps) {
+export default function HilbertCanvas({ className, rotation = 0, iterations = 6, strokeMultiplier = 0.1, scaleBase = 'width' }: HilbertCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
@@ -159,17 +160,19 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             canvas!.width = canvasW * dpr
             canvas!.height = canvasH * dpr
 
-            // square tile sized to canvas width, outset by stroke width
+            // square tile sized to chosen dimension
+            const baseSize = scaleBase === 'height' ? canvasH : canvasW
+            console.log('HilbertCanvas resize:', { scaleBase, canvasW, canvasH, baseSize })
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
             const lineWidth = rootFontSize * strokeMultiplier
             outset = lineWidth / 2
-            tileSize = canvasW + lineWidth
-            const step = Math.min(canvasW / rawW, canvasW / rawH)
-            tileStride = canvasW + step
+            tileSize = baseSize + lineWidth
+            const step = Math.min(baseSize / rawW, baseSize / rawH)
+            tileStride = baseSize + step
             const leadOffX = Math.cos(leadInDir) * step
             const leadOffY = Math.sin(leadInDir) * step
-            const ox = outset + canvasW / 2 - (minX + rawW / 2) * step - leadOffX
-            const oy = outset + canvasW / 2 - (minY + rawH / 2) * step - leadOffY
+            const ox = outset + baseSize / 2 - (minX + rawW / 2) * step - leadOffX
+            const oy = outset + baseSize / 2 - (minY + rawH / 2) * step - leadOffY
 
             // collect vertices
             let x = 0, y = 0, dir = leadInDir
@@ -299,6 +302,7 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             const w = canvasW
             const h = canvasH
             const rows = Math.ceil(h / tileStride) + 2
+            const cols = Math.ceil(w / tileStride) + 2
 
             // 0. Draw gradients once to gradBuf at curve alpha
             gradBufCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -313,11 +317,13 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             // 2. Build combined mask on main canvas (temporary)
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
             ctx!.clearRect(0, 0, w, h)
-            for (let row = -1; row < rows; row++) {
-                ctx!.drawImage(tile,
-                    0, 0, tile.width, tile.height,
-                    -outset, row * tileStride - scrollOffset - outset, tileSize, tileSize
-                )
+            for (let col = -1; col < cols; col++) {
+                for (let row = -1; row < rows; row++) {
+                    ctx!.drawImage(tile,
+                        0, 0, tile.width, tile.height,
+                        col * tileStride - outset, row * tileStride - scrollOffset - outset, tileSize, tileSize
+                    )
+                }
             }
 
             // 3. Single destination-in with the combined mask

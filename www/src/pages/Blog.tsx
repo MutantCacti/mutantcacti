@@ -47,9 +47,9 @@ export default function Blog() {
             <>
                 <div className='w-full mb-6 bg-bg border border-border rounded-lg overflow-hidden relative'>
                     {category.slug === 'essays'
-                        ? <HilbertCanvas className='absolute inset-0 w-full h-full' rotation={90} iterations={6} strokeMultiplier={0.15} />
+                        ? <HilbertCanvas className='absolute inset-0 w-full h-full' rotation={90} iterations={6} strokeMultiplier={0.15} scaleBase='width' />
                         : category.slug === 'poetry'
-                        ? <CausticCanvas className='absolute inset-0 w-full h-full' />
+                        ? <CausticCanvas className='absolute inset-0 w-full h-full' gradientHeight={400} />
                         : <div className='absolute inset-0 bg-surface' />
                     }
                     <div className='absolute inset-0' style={{ background: 'radial-gradient(ellipse 70% 100% at 0% 54%, var(--color-bg) 30%, transparent 100%)' }} />

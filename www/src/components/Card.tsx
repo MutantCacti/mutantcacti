@@ -7,7 +7,7 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
 export default function Card({ children, className, ...rest }: CardProps) {
     return (
         <div
-            className={`bg-bg border border-border rounded-lg p-4 motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 ${className ?? ''}`}
+            className={`bg-bg/90 backdrop-blur-[6px] border border-border rounded-lg p-4 motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 ${className ?? ''}`}
             {...rest}
         >
             {children}

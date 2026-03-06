@@ -7,13 +7,13 @@ import Tiltable from './Tiltable'
 import Card from './Card'
 
 type MediaItem =
-    | { type: 'image'; src: string; alt: string }
-    | { type: 'video'; youtubeId: string; title: string; alt: string }
+    | { type: 'image'; src: string; alt: string; credit?: string }
+    | { type: 'video'; youtubeId: string; title: string; alt: string; credit?: string }
 
-export default function ProjectCard({ title, year, description, tags, images, videos, repoUrl }: Project) {
+export default function ProjectCard({ title, year, description, tags, images, videos, repoUrl, credit: projectCredit }: Project) {
     const media: MediaItem[] = [
-        ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid })),
-        ...(images ?? []).map(img => ({ type: 'image' as const, ...img })),
+        ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid, credit: vid.credit ?? projectCredit })),
+        ...(images ?? []).map(img => ({ type: 'image' as const, ...img, credit: img.credit ?? projectCredit })),
     ]
     const thumbnail = images?.[0]
         ? { src: images[0].src, alt: images[0].alt }
@@ -205,8 +205,9 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                             onKeyDown={handleKeyDown}
 
                         >
+                            <div className='flex flex-col items-center gap-2 sm:max-w-[80vw] sm:max-h-[80vh]'>
                             <div
-                                className='w-full sm:w-[80vw] h-[60vh] sm:h-[80vh] flex items-center justify-center'
+                                className='relative flex items-center justify-center min-h-0 flex-1'
                                 onTouchStart={handleTouchStart}
                                 onTouchEnd={handleTouchEnd}
                             >
@@ -244,10 +245,39 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                                         key={previewIndex}
                                         src={currentItem.src}
                                         alt={currentItem.alt}
-                                        className={`max-w-full max-h-full rounded-lg bg-bg ${slideDir.current === 1 ? 'slide-next' : 'slide-prev'}`}
+                                        className={`max-w-full max-h-full rounded-lg bg-surface ${slideDir.current === 1 ? 'slide-next' : 'slide-prev'}`}
                                         onClick={e => e.stopPropagation()}
                                     />
                                 )}
+                            </div>
+                            {currentItem.credit && (() => {
+                                // Credit string convention: comma-separated entries.
+                                // If an entry starts with a lowercase character, it's treated as a
+                                // handle/id (rendered small & muted) and paired with the next entry
+                                // as its display name. Otherwise it stands alone.
+                                // e.g. "@teym1, Thomas Yonaha-McCoy, Claude Opus 4.5:4.6"
+                                //   → [{ handle: "teym1", name: "Thomas Yonaha-McCoy" }, { name: "Claude Opus 4.5:4.6" }]
+                                const parts = currentItem.credit.split(',').map(s => s.trim())
+                                const groups: { handle?: string; name: string }[] = []
+                                for (let i = 0; i < parts.length; i++) {
+                                    if (i + 1 < parts.length && parts[i].startsWith('@')) {
+                                        groups.push({ handle: parts[i].slice(1), name: parts[i + 1] })
+                                        i++
+                                    } else {
+                                        groups.push({ name: parts[i] })
+                                    }
+                                }
+                                return (
+                                    <div className='shrink-0 flex flex-col items-start gap-1 text-md text-white bg-bg rounded-lg px-6 py-4 whitespace-nowrap'>
+                                        {groups.map((g, i) => (
+                                            <span key={i} className='flex flex-col sm:flex-col'>
+                                                {g.handle && <span className='text-xs text-white/60'>{g.handle}</span>}
+                                                <span>{g.name}</span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )
+                            })()}
                             </div>
                             {media.length > 1 && (
                                 <>
@@ -317,6 +347,15 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                         </span>
                     )}
                 </div>
+                {projectCredit && (
+                    <div className='flex flex-wrap gap-2'>
+                        {projectCredit.split(',').map(s => s.trim()).filter(s => !s.startsWith('@')).map(name => (
+                            <span key={name} className='bg-accent-dark/10 hover:bg-accent-light/10 transition delay-75 duration:100 ease-in backdrop-blur-sm text-xs px-2 py-1 rounded-full text-accent-light whitespace-nowrap'>
+                                {name}
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <p className='text-text'>{description}</p>
                 <div className='flex flex-wrap gap-2 mt-1'>
                     {tags.map(tag => (
