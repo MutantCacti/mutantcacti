@@ -21,7 +21,7 @@ const GRADIENT_BANDS = [
       pos: (t: number) => 0.33 + 0.08 * Math.sin(t * 0.12 + 2.5),
       spread: (t: number) => 0.5 + 0.35 * Math.sin(t * 0.3 + 2.5),
       xPos: (t: number) => -0.3 + 0.1 * Math.sin(t * 0.18 + 2) },
-    { h: 48, s: 42, l: 42, aScale: 1.2,                            // gold — emergence
+    { h: 48, s: 42, l: 42, aScale: 0.9,                            // gold — emergence
       pos: (t: number) => 0.05 + 0.04 * Math.sin(t * 0.22 + 4),
       spread: (t: number) => 0.28 + 0.14 * Math.sin(t * 0.8 + 4),
       xPos: (t: number) => -0.3 + 0.12 * Math.sin(t * 0.25 + 3.5) },
@@ -288,7 +288,7 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             if (!prefersReduced) {
                 const force = hovering ? hoverForce : baseForce
                 scrollVelocity += force * dt
-                scrollVelocity *= (1 - drag * dt)
+                scrollVelocity *= Math.exp(-drag * dt)
             }
             scrollOffset = (scrollOffset + scrollVelocity * dt) % tileStride
 
