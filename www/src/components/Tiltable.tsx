@@ -10,6 +10,15 @@ type TiltableProps = HTMLAttributes<HTMLDivElement> & {
 export default function Tiltable({ children, maxAngle = 15, perspective = 600, className, style, ...rest }: TiltableProps) {
     const innerRef = useRef<HTMLDivElement>(null)
     const reducedMotion = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    const settling = useRef(false)
+
+    function handleEnter() {
+        const el = innerRef.current
+        if (!el || reducedMotion.current) return
+        el.style.transition = 'transform 0.15s ease-out'
+        settling.current = true
+        setTimeout(() => { settling.current = false }, 150)
+    }
 
     function handleMove(e: React.MouseEvent) {
         const el = innerRef.current
@@ -17,13 +26,14 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
         const rect = el.getBoundingClientRect()
         const x = (e.clientX - rect.left) / rect.width - 0.5
         const y = (e.clientY - rect.top) / rect.height - 0.5
-        el.style.transition = 'none'
+        if (!settling.current) el.style.transition = 'none'
         el.style.transform = `rotateX(${-y * maxAngle}deg) rotateY(${x * maxAngle}deg)`
     }
 
     function handleLeave() {
         const el = innerRef.current
         if (!el) return
+        settling.current = false
         el.style.transition = 'transform 0.3s ease-out'
         el.style.transform = ''
     }
@@ -32,6 +42,7 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
         <div
             className={className}
             style={{ perspective: `${perspective}px`, ...style }}
+            onMouseEnter={handleEnter}
             onMouseMove={handleMove}
             onMouseLeave={handleLeave}
             {...rest}

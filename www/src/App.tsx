@@ -4,6 +4,7 @@ import Layout from "./Layout"
 import Profile from "./pages/Profile"
 import Projects from "./pages/Projects"
 import Blog from "./pages/Blog"
+import BlogPost from "./pages/BlogPost"
 
 function App() {
     return (
@@ -16,6 +17,8 @@ function App() {
                             <Route path='/' element={<Profile />} />
                             <Route path='/projects' element={<Projects />} />
                             <Route path='/blog' element={<Blog />} />
+                            <Route path='/blog/:category' element={<Blog />} />
+                            <Route path='/blog/:category/:slug' element={<BlogPost />} />
                         </Route>
                     </Routes>
                 </BrowserRouter>

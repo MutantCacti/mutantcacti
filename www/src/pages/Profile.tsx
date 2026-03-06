@@ -17,7 +17,7 @@ export default function Profile() {
                     </div>
                     <div className='mt-4 mr-2 text-center sm:text-left'>
                         <div className='flex flex-col sm:flex-row gap-3 mb-4 items-center'>
-                            <h1 className="text-accent-light text-2xl mr-4">Maxence Morel Dierckx</h1>
+                            <h1 className="text-accent-light text-2xl sm:mr-4">Maxence Morel Dierckx</h1>
                             <div className='flex gap-3'>
                                 <a href='https://github.com/MutantCacti' target='_blank' rel='noopener noreferrer' aria-label='GitHub' className='text-text-muted hover:text-accent-light transition-colors rounded-full'>
                                     <SiGithub size={20} />
@@ -33,10 +33,14 @@ export default function Profile() {
                                 </a>
                             </div>
                         </div>
-                        <p className='text-text'>Computer Science Student <span className='mx-1'>•</span> University of St Andrews</p>
+                        <span className='text-text flex flex-col sm:flex-row'>
+                            <p>Computer Science Student</p> 
+                            <span className='hidden sm:block mx-1'>•</span>
+                            <p>University of St Andrews</p>
+                        </span>
                         <p className='mt-2'>Research Intern for the AI Rotate Project</p>
                         <p className='mt-2'>French and Belgian </p>
-                        <div className='flex gap-4 mt-4 text-sm'>
+                        <div className='flex gap-4 mt-4 text-sm justify-center sm:justify-start'>
                             <a href='mailto:mutantcacti@gmail.com' className='text-text-muted hover:text-accent-light transition-colors rounded-sm'>mutantcacti@gmail.com</a>
                             <span className='text-text-muted'>•</span>
                             <a href='https://docs.google.com/document/d/15s2jYQEbHIwdhUxZAYHXV76J6STfO8PvjGnkocat_XU/export?format=pdf' target='_blank' rel='noopener noreferrer' className='text-text-muted hover:text-accent-light transition-colors inline-flex items-center gap-1 rounded-sm'>Resume <HiOutlineDownload size={14} /></a>
