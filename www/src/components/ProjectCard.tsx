@@ -12,8 +12,8 @@ type MediaItem =
 
 export default function ProjectCard({ title, year, description, tags, images, videos, repoUrl, credit: projectCredit }: Project) {
     const media: MediaItem[] = [
-        ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid, credit: vid.credit ?? projectCredit })),
-        ...(images ?? []).map(img => ({ type: 'image' as const, ...img, credit: img.credit ?? projectCredit })),
+        ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid, credit: vid.credit })),
+        ...(images ?? []).map(img => ({ type: 'image' as const, ...img, credit: img.credit })),
     ]
     const thumbnail = images?.[0]
         ? { src: images[0].src, alt: images[0].alt }
@@ -205,14 +205,14 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                             onKeyDown={handleKeyDown}
 
                         >
-                            <div className='flex flex-col items-center gap-2 sm:max-w-[80vw] sm:max-h-[80vh]'>
+                            <div className='flex flex-col items-center gap-2 w-full sm:flex-1 sm:min-w-0 sm:max-w-[70vw] sm:h-[80vh]'>
                             <div
                                 className='relative flex items-center justify-center min-h-0 flex-1'
                                 onTouchStart={handleTouchStart}
                                 onTouchEnd={handleTouchEnd}
                             >
                                 {currentItem.type === 'video' ? (
-                                    <div key={previewIndex} className='relative w-full max-h-full aspect-video' onClick={e => e.stopPropagation()}>
+                                    <div key={previewIndex} className='relative aspect-video w-full h-full max-h-full' onClick={e => e.stopPropagation()}>
                                         {videoInteractive ? (
                                             <iframe
                                                 src={`https://www.youtube-nocookie.com/embed/${currentItem.youtubeId}?rel=0&autoplay=1`}
