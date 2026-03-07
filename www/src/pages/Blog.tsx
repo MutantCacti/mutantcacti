@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { posts, categories, getCategoryBySlug, getPostsByTag } from '../data/posts'
 import Card from '../components/Card'
 import Tiltable from '../components/Tiltable'
+import TimeAge from '../components/TimeAge'
 import HilbertCanvas from '../components/HilbertCanvas'
 import CausticCanvas from '../components/CausticCanvas'
 
@@ -17,7 +18,7 @@ function PostList({ categorySlug, filteredPosts }: { categorySlug: string, filte
                     <Card className='w-full'>
                         <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-2'>
                             <h2 className='text-accent-light text-xl'>{post.title}</h2>
-                            <span className='text-text-muted text-sm'>{post.date}</span>
+                            <TimeAge date={post.date} className='text-text-muted text-sm' />
                         </div>
                         {post.description && (
                             <p className='text-text'>{post.description}</p>
@@ -47,7 +48,7 @@ export default function Blog() {
             <>
                 <div className='w-full mb-6 bg-bg border border-border rounded-lg overflow-hidden relative'>
                     {category.slug === 'essays'
-                        ? <HilbertCanvas className='absolute inset-0 w-full h-full' rotation={90} iterations={6} strokeMultiplier={0.15} scaleBase='width' />
+                        ? <HilbertCanvas className='absolute inset-0 w-full h-full' rotation={90} iterations={6} strokeMultiplier={0.15} scaleBase='width' mobileScaleBase='width' />
                         : category.slug === 'poetry'
                         ? <CausticCanvas className='absolute inset-0 w-full h-full' gradientHeight={400} />
                         : <div className='absolute inset-0 bg-surface' />
@@ -70,9 +71,9 @@ export default function Blog() {
                     <Link key={cat.slug} to={`/blog/${cat.slug}`} className='rounded-lg'>
                         <Tiltable className='h-full'>
                             <div className='bg-bg border border-border rounded-lg overflow-hidden h-full'>
-                                <div className='relative h-40' style={{ willChange: 'transform' }}>
+                                <div className='relative h-40 sm:will-change-transform'>
                                     {cat.slug === 'essays'
-                                        ? <HilbertCanvas iterations={4} strokeMultiplier={0.15} className='absolute inset-0 w-full h-full' />
+                                        ? <HilbertCanvas iterations={4} strokeMultiplier={0.15} className='absolute inset-0 w-full h-full' mobileScaleBase='height' />
                                         : cat.slug === 'poetry'
                                         ? <CausticCanvas className='absolute inset-0 w-full h-full' />
                                         : <div className='absolute inset-0 bg-surface' />

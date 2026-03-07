@@ -34,6 +34,10 @@
     --color-text-muted: #838e8b;
 }
 
+html {
+    overscroll-behavior-y: contain;
+}
+
 *:focus-visible {
     outline: 3px solid var(--color-highlight);
 }

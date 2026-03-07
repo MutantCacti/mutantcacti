@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 import { getPostBySlug } from '../data/posts'
 import { mdxComponents } from '../components/mdx'
 import Card from '../components/Card'
+import TimeAge from '../components/TimeAge'
 
 export default function BlogPost() {
     const { slug } = useParams<{ slug: string }>()
@@ -29,7 +30,7 @@ export default function BlogPost() {
                         </span>
                     ))}
                 </header>
-                <div className='w-full h-0.5 bg-border rounded-full my-6'/>
+                <div className='mb-8'/>
                 <div className='prose'>
                     <Component components={mdxComponents} />
                 </div>

@@ -6,7 +6,8 @@ type HilbertCanvasProps = {
     rotation?: number
     iterations?: number
     strokeMultiplier?: number
-    scaleBase?: 'width' | 'height'  // which dimension drives tile size (default: 'width')
+    scaleBase?: 'width' | 'height'           // which dimension drives tile size (default: 'width')
+    mobileScaleBase?: 'width' | 'height'     // override scaleBase on narrow viewports (< 640px)
 }
 
 const GRADIENT_BANDS = [
@@ -81,7 +82,7 @@ function drawGradients(ctx: CanvasRenderingContext2D, w: number, h: number, time
     ctx.restore()
 }
 
-export default function HilbertCanvas({ className, rotation = 0, iterations = 6, strokeMultiplier = 0.1, scaleBase = 'width' }: HilbertCanvasProps) {
+export default function HilbertCanvas({ className, rotation = 0, iterations = 6, strokeMultiplier = 0.1, scaleBase = 'width', mobileScaleBase }: HilbertCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
@@ -161,7 +162,8 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             canvas!.height = canvasH * dpr
 
             // square tile sized to chosen dimension
-            const baseSize = scaleBase === 'height' ? canvasH : canvasW
+            const effectiveScale = (mobileScaleBase && window.innerWidth < 640) ? mobileScaleBase : scaleBase
+            const baseSize = effectiveScale === 'height' ? canvasH : canvasW
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
             const lineWidth = rootFontSize * strokeMultiplier
             outset = lineWidth / 2
@@ -364,5 +366,5 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
         }
     }, [])
 
-    return <canvas ref={canvasRef} className={`hilbert ${className ?? ''}`} />
+    return <canvas ref={canvasRef} className={`hilbert ${className ?? ''}`} style={{ touchAction: 'pan-y' }} />
 }

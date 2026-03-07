@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { ReactNode, HTMLAttributes } from 'react'
 
 type TiltableProps = HTMLAttributes<HTMLDivElement> & {
@@ -11,6 +11,11 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
     const innerRef = useRef<HTMLDivElement>(null)
     const reducedMotion = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     const settling = useRef(false)
+    const [isTouch, setIsTouch] = useState(false)
+
+    useEffect(() => {
+        setIsTouch(window.matchMedia('(pointer: coarse)').matches)
+    }, [])
 
     function handleEnter() {
         const el = innerRef.current
@@ -41,7 +46,7 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
     return (
         <div
             className={className}
-            style={{ perspective: `${perspective}px`, ...style }}
+            style={{ ...(!isTouch && { perspective: `${perspective}px` }), ...style }}
             onMouseEnter={handleEnter}
             onMouseMove={handleMove}
             onMouseLeave={handleLeave}

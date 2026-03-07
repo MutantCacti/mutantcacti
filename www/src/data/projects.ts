@@ -72,7 +72,7 @@ export const projects: Project[] = [
         tags: ['Accessibility', 'NLP', 'Full-Stack'],
         credit: 'ac516, ajp34, as696, ep247, eb379, gg89, irv1, kc237, ky39, mm586, pm272, pt76, rh265, wf27, teym1, tfb6, vh46, zlt1',
         images: [
-            { src: accessibubbleLanding, alt: 'Accessibubble landing page with search bar and recent audit results', credit: '@teym1, Thomas Yonaha-McCoy, Claude Opus 4.5:4.6' },
+            { src: accessibubbleLanding, alt: 'Accessibubble landing page with search bar and recent audit results', credit: '@teym1, Thomas Yonaha-McCoy' },
             { src: accessibubbleAudit, alt: 'Accessibubble audit results showing accessibility score and violations', credit: '@teym1, Thomas Yonaha-McCoy, Claude Opus 4.5:4.6' },
         ],
         featured: true,

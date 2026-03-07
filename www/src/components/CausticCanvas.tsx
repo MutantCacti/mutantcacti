@@ -17,7 +17,7 @@ const PARTICLE_LIFESPAN = 3200     // ms before respawn
 const TRAIL_LENGTH = 20            // positions retained per particle
 const BLOB_RADIUS = 12              // influence radius in field pixels
 const TIME_SCALE = 0.05             // simulation speed (normal)
-const TIME_SCALE_HOVER = 0.2      // simulation speed (hover)
+const TIME_SCALE_HOVER = 0.3      // simulation speed (hover)
 const FLOW_SPEED = 2.0             // global multiplier on flow magnitude
 const WAVE_GLOBAL_AMP = 1.5        // global multiplier on wave deflection
 // contour bands: each line sweeps from one boundary to the next
@@ -755,5 +755,5 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
         }
     }, [])
 
-    return <canvas ref={canvasRef} className={className ?? ''} />
+    return <canvas ref={canvasRef} className={className ?? ''} style={{ touchAction: 'pan-y' }} />
 }
