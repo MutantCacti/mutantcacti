@@ -35,6 +35,7 @@
 }
 
 html {
+    background-color: var(--color-bg);
     overscroll-behavior-y: contain;
 }
 

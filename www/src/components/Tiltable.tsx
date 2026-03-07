@@ -50,6 +50,7 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
             onMouseEnter={handleEnter}
             onMouseMove={handleMove}
             onMouseLeave={handleLeave}
+            onDragStart={e => e.preventDefault()}
             {...rest}
         >
             <div ref={innerRef} className="w-full h-full">

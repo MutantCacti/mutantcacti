@@ -30,11 +30,14 @@ const SAT_SCALE = 3.0                  // Pattern frequency (higher = more bands
 const SAT_DRIFT: [number, number] = [0.0, -0.5]  // Pattern scroll per second (x, y); negative y = upward
 const SAT_SHAPE = (t: number) => 0.5 + 0.5 * Math.sin(t)  // Transition function (0–1)
 
+// ── Green suppression ──────────────────────────────────────────
+const GREEN_SUPPRESS = 1.0          // How much green excess to redirect to blue (0 = none, 1 = all)
+
 const TWO_PI = Math.PI * 2
 
-type Props = { className?: string }
+type Props = { className?: string; rotation?: number }
 
-export default function MandelbrotCanvas({ className }: Props) {
+export default function MandelbrotCanvas({ className, rotation = ROTATION }: Props) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     useEffect(() => {
@@ -49,10 +52,12 @@ export default function MandelbrotCanvas({ className }: Props) {
         canvas.width = w
         canvas.height = h
 
-        const rw = Math.max(1, Math.ceil(w * RENDER_SCALE))
-        const rh = Math.max(1, Math.ceil(h * RENDER_SCALE))
-        const cosR = Math.cos(ROTATION)
-        const sinR = Math.sin(ROTATION)
+        // Derive pixel size from the shorter axis so pixels stay square
+        const pixelSize = Math.max(1, Math.round(1 / RENDER_SCALE))
+        const rw = Math.max(1, Math.ceil(w / pixelSize))
+        const rh = Math.max(1, Math.ceil(h / pixelSize))
+        const cosR = Math.cos(rotation)
+        const sinR = Math.sin(rotation)
 
         // Reusable render buffer
         const oc = document.createElement('canvas')
@@ -76,8 +81,10 @@ export default function MandelbrotCanvas({ className }: Props) {
         let satTime = 0
         let rafId: number
 
-        canvas.addEventListener('mouseenter', () => { hovered = true })
-        canvas.addEventListener('mouseleave', () => { hovered = false })
+        // Detect hover on the nearest positioned ancestor (e.g. the hero banner)
+        const hoverTarget = canvas.offsetParent as HTMLElement ?? canvas
+        hoverTarget.addEventListener('mouseenter', () => { hovered = true })
+        hoverTarget.addEventListener('mouseleave', () => { hovered = false })
 
         function compute() {
             const step = (radius * 2) / rh
@@ -149,12 +156,15 @@ export default function MandelbrotCanvas({ className }: Props) {
                 d[off + 3] = 255
             }
 
-            // Saturation band post-processing
+            // Saturation band post-processing (rotated with fractal)
             for (let p = 0; p < rw * rh; p++) {
                 const px = p % rw
                 const py = (p - px) / rw
-                const nx = px / rw
-                const ny = py / rh
+                // Centre-relative normalised coords, rotated by the fractal rotation
+                const cx = px / rw - 0.5
+                const cy = py / rh - 0.5
+                const nx = cx * cosR - cy * sinR + 0.5
+                const ny = cx * sinR + cy * cosR + 0.5
                 const t = TWO_PI * SAT_SCALE * (ny + SAT_DRIFT[1] * satTime)
                         + TWO_PI * SAT_SCALE * (nx + SAT_DRIFT[0] * satTime)
                 const sat = SAT_INTENSITY * SAT_SHAPE(t)
@@ -165,6 +175,18 @@ export default function MandelbrotCanvas({ className }: Props) {
                 d[off]     = lum + (r - lum) * keep
                 d[off + 1] = lum + (g - lum) * keep
                 d[off + 2] = lum + (b - lum) * keep
+            }
+
+            // Green suppression: redirect green excess into blue
+            for (let p = 0; p < rw * rh; p++) {
+                const off = p * 4
+                const g = d[off + 1]
+                const floor = Math.max(d[off], d[off + 2])
+                if (g > floor) {
+                    const excess = (g - floor) * GREEN_SUPPRESS
+                    d[off + 1] = g - excess
+                    d[off + 2] = d[off + 2] + excess
+                }
             }
 
             octx.putImageData(img, 0, 0)

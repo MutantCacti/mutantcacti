@@ -11,7 +11,7 @@ let accentMode = false
 
 function LSystemCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const iterations = 5
+    const iterations = 6
     const stepMultiplier = 1
     const radiusRatio = 0.25
     const lineWidthMultiplier = 0.161

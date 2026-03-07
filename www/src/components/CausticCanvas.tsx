@@ -24,7 +24,7 @@ const WAVE_GLOBAL_AMP = 1.5        // global multiplier on wave deflection
 const CONTOUR_BOUNDS = [0.2, 1.0, 1.6, 2.8, 4.0] // N+1 boundaries → N sweeping lines
 const CONTOUR_CYCLE_SPEED = 2.0    // cycles per second (in simulation time)
 const CONTOUR_ALPHA = 0.77         // peak opacity — particle contours
-const CONTOUR_WIDTH = 5.0          // line width in CSS px
+const CONTOUR_WIDTH = 4.0          // line width in CSS px
 const CONTOUR_FADE = (cycle: number) => Math.pow(Math.sin(cycle * Math.PI), 0.4)  // cycle (0–1) → opacity multiplier
 
 // --- Layer 2: density-driven hue shift ---

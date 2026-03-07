@@ -15,7 +15,7 @@ function PostList({ categorySlug, filteredPosts }: { categorySlug: string, filte
     return (
         <div className='flex flex-col gap-4 w-full'>
             {filteredPosts.map(post => (
-                <Link key={post.slug} to={`/blog/${categorySlug}/${post.slug}`}>
+                <Link key={post.slug} to={`/blog/${categorySlug}/${post.slug}`} state={{ from: `/blog/${categorySlug}`, label: getCategoryBySlug(categorySlug)?.label ?? 'Blog' }} draggable={false}>
                     <Card className='w-full'>
                         <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-2'>
                             <h2 className='text-accent-light text-xl'>{post.title}</h2>
@@ -53,10 +53,10 @@ export default function Blog() {
                         : category.slug === 'poetry'
                         ? <CausticCanvas className='absolute inset-0 w-full h-full' gradientHeight={400} />
                         : category.slug === 'music'
-                        ? <MandelbrotCanvas className='absolute inset-0 w-full h-full' />
+                        ? <MandelbrotCanvas className='absolute inset-0 w-full h-full' rotation={-Math.PI}/>
                         : <div className='absolute inset-0 bg-surface' />
                     }
-                    <div className='absolute inset-0' style={{ background: 'radial-gradient(ellipse 70% 100% at 0% 54%, var(--color-bg) 30%, transparent 100%)' }} />
+                    <div className='absolute inset-0' style={{ background: 'radial-gradient(ellipse 90% 120% at 0% 54%, var(--color-bg) 30%, transparent 100%)' }} />
                     <div className='relative px-6 py-5'>
                         <h1 className='text-text text-3xl'>{category.label}</h1>
                     </div>
@@ -66,12 +66,14 @@ export default function Blog() {
         )
     }
 
+    const recentPosts = posts.slice(0, 4)
+
     return (
         <>
             <h1 className='sr-only'>Blog</h1>
             <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 w-full'>
                 {categories.map(cat => (
-                    <Link key={cat.slug} to={`/blog/${cat.slug}`} className='rounded-lg'>
+                    <Link key={cat.slug} to={`/blog/${cat.slug}`} className='rounded-lg' draggable={false}>
                         <Tiltable className='h-full'>
                             <div className='bg-bg border border-border rounded-lg overflow-hidden h-full'>
                                 <div className='relative h-40 sm:will-change-transform'>
@@ -105,6 +107,30 @@ export default function Blog() {
                     </Link>
                 ))}
             </div>
+            {recentPosts.length > 0 && (
+                <section className='w-full mt-8'>
+                    <h2 className='text-text text-xl mb-4'>Recent Posts</h2>
+                    <div className='flex flex-col gap-4'>
+                        {recentPosts.map(post => {
+                            const cat = categories.find(c => post.tags.includes(c.tag))
+                            return (
+                                <Link key={post.slug} to={`/blog/${cat?.slug ?? 'essays'}/${post.slug}`} state={{ from: '/blog', label: 'Blog' }} draggable={false}>
+                                    <Card className='w-full'>
+                                        <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-2'>
+                                            <h3 className='text-accent-light text-lg'>{post.title}</h3>
+                                            <TimeAge date={post.date} className='text-text-muted text-sm' />
+                                            {cat && <span className='text-text-muted text-xs bg-border px-2 py-0.5 rounded'>{cat.label}</span>}
+                                        </div>
+                                        {post.description && (
+                                            <p className='text-text'>{post.description}</p>
+                                        )}
+                                    </Card>
+                                </Link>
+                            )
+                        })}
+                    </div>
+                </section>
+            )}
         </>
     )
 }

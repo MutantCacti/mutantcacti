@@ -39,11 +39,14 @@ export default function Projects() {
         cardRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
 
+    const featured = projects.filter(p => p.featured)
+    const solo = projects.filter(p => !p.featured)
+
     return (
         <div className="w-full relative">
             <h1 className="sr-only">Projects</h1>
             <div className="flex flex-col gap-4">
-                {projects.map((project, i) => (
+                {featured.map((project, i) => (
                     <div
                         key={project.title}
                         ref={el => { cardRefs.current[i] = el }}
@@ -51,6 +54,22 @@ export default function Projects() {
                         <ProjectCard {...project} />
                     </div>
                 ))}
+                {solo.length > 0 && (
+                    <>
+                        <h2 className='text-text text-xl mt-4'>Solo Projects</h2>
+                        {solo.map((project, i) => {
+                            const idx = featured.length + i
+                            return (
+                                <div
+                                    key={project.title}
+                                    ref={el => { cardRefs.current[idx] = el }}
+                                >
+                                    <ProjectCard {...project} />
+                                </div>
+                            )
+                        })}
+                    </>
+                )}
             </div>
             {projects.length > 1 && (
                 <nav

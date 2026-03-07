@@ -5,6 +5,7 @@ import Profile from "./pages/Profile"
 import Projects from "./pages/Projects"
 import Blog from "./pages/Blog"
 import BlogPost from "./pages/BlogPost"
+import NotFound from "./pages/NotFound"
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                             <Route path='/blog' element={<Blog />} />
                             <Route path='/blog/:category' element={<Blog />} />
                             <Route path='/blog/:category/:slug' element={<BlogPost />} />
+                            <Route path='*' element={<NotFound />} />
                         </Route>
                     </Routes>
                 </BrowserRouter>

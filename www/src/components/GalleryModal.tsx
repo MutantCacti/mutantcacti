@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import type { MediaItem } from '../types/media'
 
-export type MediaItem =
-    | { type: 'image'; src: string; alt: string; credit?: string }
-    | { type: 'video'; youtubeId: string; title: string; alt: string; credit?: string; footnote?: string }
+export type { MediaItem }
 
 type GalleryModalProps = {
     title: string
@@ -14,13 +13,14 @@ type GalleryModalProps = {
 
 export default function GalleryModal({ title, media, initialIndex, onClose }: GalleryModalProps) {
     const [index, setIndex] = useState(initialIndex)
-    const [videoInteractive, setVideoInteractive] = useState(false)
     const modalRef = useRef<HTMLDivElement>(null)
     const mobileStripRef = useRef<HTMLDivElement>(null)
     const desktopStripRef = useRef<HTMLDivElement>(null)
     const slideDir = useRef<1 | -1>(1)
     const touchStart = useRef<number | null>(null)
     const prevFocus = useRef<Element | null>(null)
+
+    const currentItem = media[index]
 
     // Focus modal on mount, restore focus on unmount
     useEffect(() => {
@@ -30,11 +30,6 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             (prevFocus.current as HTMLElement)?.focus?.()
         }
     }, [])
-
-    // Reset video player on navigation
-    useEffect(() => {
-        setVideoInteractive(false)
-    }, [index])
 
     // Lock body scroll
     useEffect(() => {
@@ -138,7 +133,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                     <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt='' className='w-full h-full object-cover' />
                     <div className='absolute inset-0 flex items-center justify-center'>
                         <svg className='w-5 h-5 text-white drop-shadow-lg' viewBox='0 0 24 24' fill='currentColor'>
-                            <path d='M8 5v14l11-7z' />
+                            <path d='M9.5 6.5l9 5.5-9 5.5z' />
                         </svg>
                     </div>
                 </div>
@@ -146,8 +141,6 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
         }
         return <img src={item.src} alt='' className='w-full h-full object-cover' />
     }
-
-    const currentItem = media[index]
 
     return createPortal(
         <div
@@ -160,6 +153,15 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             onClick={onClose}
             onKeyDown={handleKeyDown}
         >
+            <button
+                onClick={e => { e.stopPropagation(); onClose() }}
+                aria-label='Close gallery'
+                className='absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-bg/50 hover:bg-bg/70 text-white transition cursor-pointer'
+            >
+                <svg viewBox='0 0 24 24' className='w-5 h-5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'>
+                    <path d='M18 6L6 18M6 6l12 12' />
+                </svg>
+            </button>
             <div className='flex flex-col items-center gap-2 w-full sm:flex-1 sm:min-w-0 sm:max-w-[70vw] sm:h-[80vh]'>
                 <div
                     className='relative flex items-center justify-center min-h-0 flex-1'
@@ -169,38 +171,23 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                     {currentItem.type === 'video' ? (
                         <>
                             <div key={index} className='relative aspect-video w-full h-full max-h-full' onClick={e => e.stopPropagation()}>
-                                {videoInteractive ? (
-                                    <iframe
-                                        src={`https://www.youtube-nocookie.com/embed/${currentItem.youtubeId}?rel=0&autoplay=1`}
-                                        title={currentItem.title}
-                                        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                                        allowFullScreen
-                                        className='w-full h-full rounded-lg'
-                                    />
-                                ) : (
-                                    <button
-                                        className='w-full h-full rounded-lg overflow-hidden cursor-pointer group/play'
-                                        onClick={() => setVideoInteractive(true)}
-                                        aria-label={`Play ${currentItem.title}`}
-                                    >
-                                        <img
-                                            src={`https://img.youtube.com/vi/${currentItem.youtubeId}/hqdefault.jpg`}
-                                            alt={currentItem.alt}
-                                            className='w-full h-full object-cover'
-                                        />
-                                        <div className='absolute inset-0 flex items-center justify-center bg-black/20 group-hover/play:bg-black/30 transition'>
-                                            <svg className='w-16 h-16 text-white drop-shadow-lg' viewBox='0 0 24 24' fill='currentColor'>
-                                                <path d='M8 5v14l11-7z' />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                )}
+                                <iframe
+                                    src={`https://www.youtube-nocookie.com/embed/${currentItem.youtubeId}?rel=0`}
+                                    title={currentItem.title}
+                                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                    allowFullScreen
+                                    className='w-full h-full rounded-lg pointer-events-none'
+                                />
+                                <div
+                                    className='absolute inset-0 rounded-lg'
+                                    onClickCapture={e => {
+                                        e.stopPropagation()
+                                        const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement
+                                        iframe.classList.remove('pointer-events-none')
+                                        e.currentTarget.classList.add('pointer-events-none')
+                                    }}
+                                />
                             </div>
-                            {currentItem.footnote && (
-                                <p className='text-xs text-white/50 mt-2 text-center italic' onClick={e => e.stopPropagation()}>
-                                    {currentItem.footnote}
-                                </p>
-                            )}
                         </>
                     ) : (
                         <img
@@ -212,6 +199,11 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                         />
                     )}
                 </div>
+                {currentItem.type === 'video' && currentItem.footnote && (
+                    <p className='text-sm text-white/90 mt-2 italic text-center bg-surface rounded px-3 py-1' onClick={e => e.stopPropagation()}>
+                        {currentItem.footnote}
+                    </p>
+                )}
                 {currentItem.credit && (() => {
                     const parts = currentItem.credit.split(',').map(s => s.trim())
                     const groups: { handle?: string; name: string }[] = []
@@ -250,7 +242,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                                     onClick={e => { e.stopPropagation(); slideDir.current = i > index ? 1 : -1; setIndex(i) }}
                                     aria-label={item.alt}
                                     aria-current={i === index ? 'true' : undefined}
-                                    className={`w-24 h-[60px] shrink-0 rounded overflow-hidden transition ${i === index ? 'ring-2 ring-accent-light' : ''}`}
+                                    className={`w-24 h-[60px] shrink-0 rounded overflow-hidden transition ${i === index ? 'ring-2 ring-highlight' : ''}`}
                                 >
                                     {renderThumbnail(item)}
                                 </button>
@@ -270,7 +262,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                                     onClick={e => { e.stopPropagation(); slideDir.current = i > index ? 1 : -1; setIndex(i) }}
                                     aria-label={item.alt}
                                     aria-current={i === index ? 'true' : undefined}
-                                    className={`w-16 h-10 shrink-0 rounded overflow-hidden transition ${i === index ? 'ring-2 ring-accent-light' : ''}`}
+                                    className={`w-16 h-10 shrink-0 rounded overflow-hidden transition ${i === index ? 'ring-2 ring-highlight' : ''}`}
                                 >
                                     {renderThumbnail(item)}
                                 </button>
