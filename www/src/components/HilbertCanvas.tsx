@@ -162,7 +162,6 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
 
             // square tile sized to chosen dimension
             const baseSize = scaleBase === 'height' ? canvasH : canvasW
-            console.log('HilbertCanvas resize:', { scaleBase, canvasW, canvasH, baseSize })
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
             const lineWidth = rootFontSize * strokeMultiplier
             outset = lineWidth / 2

@@ -34,9 +34,17 @@ const HUE_SHIFT_STRENGTH = 1      // max alpha of shifted layer in empty areas
 const INVERSION_SENSITIVITY = 0.8 
  // how quickly density suppresses the shift
 
+// --- Highlight ray ---
+const RAY_ALPHA = 0.09              // peak opacity of the ray
+const RAY_HSL: [number, number, number] = [200, 30, 92]  // near-white with a cool tint
+const RAY_WIDTH = 0.25              // width of the ray as a fraction of the canvas diagonal
+const RAY_SOFTNESS = 0.4            // 0 = hard edge, 1 = fully feathered
+const RAY_SLOPE = -1.5                // m in y = mx + c (slope of the ray's axis, in canvas space where y points down)
+const RAY_INTERCEPT = 1.3           // c — y-intercept as a fraction of canvas height (0 = top, 1 = bottom)
+
 // --- Density glow ---
 const GLOW_BRIGHTNESS = 0.04       // maps density to glow intensity
-const GLOW_RGB: [number, number, number] = [255, 170, 60]   // campfire gold
+const GLOW_RGB: [number, number, number] = [100, 240, 220]   // luminous teal
 // Transfer function: density (0-1) → glow intensity (0-1)
 // Swap this out for any shape you want
 const glowTransfer = (x: number): number => {
@@ -46,21 +54,28 @@ const glowTransfer = (x: number): number => {
 // --- Colour system ---
 
 const GRADIENT_ALPHA = 1        // global alpha for gradient fills
-const BAND_WARP_AMP = 10        // max warp displacement in CSS px
-const BAND_COL_WIDTH = 28        // column width for warped rendering (px)
+const BAND_WARP_AMP = 2        // max warp displacement in CSS px
+const BAND_COL_WIDTH = 1        // column width for warped rendering (px)
 const GRADIENT_DRIFT_SPEED = 0.02  // vertical drift rate from flow
 const GRADIENT_WARP_SPEED = 0.5    // warp phase accumulation rate from flow
 const NOISE_AMP = 2               // max noise displacement in CSS px
 const NOISE_SCROLL_SPEED = 0.8     // upward scroll rate
 
+// --- Band vertical scrolling ---
+const BAND_SCROLL_SPEED = 0.72     // global multiplier for upward band drift (fraction of canvas height per sim-second)
+const BAND_SCROLL_MARGIN = 0.1     // extra margin beyond band width before wrap (avoids popping)
+
 // Each band: h, s, l (HSL colour), alpha (0-1), pos (0=top, 1=bottom), width (fraction of canvas height), sharpness (0=diffuse, 1=hard), warpPhase (radians)
 const GRADIENT_BANDS = [
-    { h: 175, s: 35, l: 40, alpha: 0.5, pos: 0.85, width: 0.8, sharpness: 0, warpPhase: 0, warpFreq: 0.06 },       // deep turquoise — low, wide, diffuse
-    { h: 35,  s: 55, l: 55, alpha: 0.35, pos: 0.6, width: 0.25, sharpness: 0.1, warpPhase: -0.2, warpFreq: 0.04 },  // amber thread — thin, tight
-    { h: 160, s: 65, l: 70, alpha: 0.2, pos: 0.45, width: 0.4, sharpness: 0.1, warpPhase: 1.0, warpFreq: 0.02 },    // lighter turquoise
-    { h: 350, s: 70, l: 80, alpha: 0.3, pos: 0.25, width: 0.4, sharpness: 0, warpPhase: 0.0, warpFreq: 0.03 },      // rose-white
-    { h: 190, s: 50, l: 60, alpha: 0.3, pos: 0.1, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01 },      // light cyan
-    { h: 150, s: 100, l: 40, alpha: 0.1, pos: 0.06, width: 0.6, sharpness: 0.01, warpPhase: 1273618273612.0, warpFreq: 0.1 },      // accent highlight
+    { h: 175, s: 35, l: 40, alpha: 0.5, pos: 2.3, width: 0.8, sharpness: 0, warpPhase: 0, warpFreq: 0.06, scrollSpeed: 1.0 },       // deep turquoise
+    { h: 350, s: 70, l: 70, alpha: 0.2, pos: 2.0, width: 0.15, sharpness: 0.1, warpPhase: 0.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // rose-white
+    { h: 160, s: 40, l: 40, alpha: 0.4, pos: 1.5, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.2, scrollSpeed: 1.0 },      // dark turquoise
+    { h: 190, s: 50, l: 60, alpha: 0.3, pos: 1.2, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01, scrollSpeed: 1.0 },      // light cyan
+    { h: 175, s: 35, l: 40, alpha: 0.5, pos: 0.85, width: 0.8, sharpness: 0, warpPhase: 0, warpFreq: 0.06, scrollSpeed: 1.0 },       // deep turquoise — low, wide, diffuse
+    { h: 160, s: 65, l: 70, alpha: 0.2, pos: 0.45, width: 0.4, sharpness: 0.1, warpPhase: 1.0, warpFreq: 0.02, scrollSpeed: 1.0 },    // lighter turquoise
+    { h: 190, s: 50, l: 60, alpha: 0.3, pos: 0.1, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01, scrollSpeed: 1.0 },      // light cyan
+    { h: 150, s: 100, l: 40, alpha: 0.1, pos: 0.06, width: 0.6, sharpness: 0.01, warpPhase: 1273618273612.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // accent highlight
+    { h: 350, s: 70, l: 70, alpha: 0.2, pos: -0.4, width: 0.35, sharpness: 0.1, warpPhase: 0.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // rose-white
 ]
 
 // Per-band contour colours [h, s, l]
@@ -103,6 +118,20 @@ type Particle = {
     trailLen: number
 }
 
+// Lazy-initialised 1px-wide strip canvas for pre-rendering band gradients
+const STRIP_H = 64
+let _stripBuf: HTMLCanvasElement | null = null
+let _stripCtx: CanvasRenderingContext2D | null = null
+function getStripCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
+    if (!_stripBuf) {
+        _stripBuf = document.createElement('canvas')
+        _stripBuf.width = 1
+        _stripBuf.height = STRIP_H
+        _stripCtx = _stripBuf.getContext('2d')!
+    }
+    return [_stripBuf, _stripCtx!]
+}
+
 function drawGradients(
     ctx: CanvasRenderingContext2D,
     w: number, h: number,
@@ -115,25 +144,55 @@ function drawGradients(
     gradH?: number,
 ) {
     const gh = gradH ?? h  // virtual height for band layout
+    const [strip, sCtx] = getStripCanvas()
     ctx.save()
     ctx.globalCompositeOperation = 'lighter'
+    ctx.imageSmoothingEnabled = true
 
     for (let i = 0; i < GRADIENT_BANDS.length; i++) {
         const band = GRADIENT_BANDS[i]
 
-        // flow at band center → vertical drift (accumulates from 0 via drift)
-        const fdy = FLOW_SINK.y - band.pos
-        const fdLen = Math.sqrt((FLOW_SINK.x - 0.5) ** 2 + fdy * fdy) || 0.001
-        const baseCenterY = gh * (band.pos + (fdy / fdLen) * drift * GRADIENT_DRIFT_SPEED)
-        const halfH = gh * 0.5 * band.width
+        // scroll band upward and wrap around
+        const scrollOffset = drift * (band.scrollSpeed ?? 0) * BAND_SCROLL_SPEED
+        const margin = BAND_SCROLL_MARGIN + band.width * 0.5
+        const cycleLen = 1 + 2 * margin
+        const rawPos = band.pos - scrollOffset
+        const lo = -margin
+        const wrappedPos = ((rawPos - lo) % cycleLen + cycleLen) % cycleLen + lo
 
+        const halfH = gh * 0.5 * band.width
+        const bandH = halfH * 2
+
+        // pre-render gradient profile to 1px strip (once per band, not per column)
         const hue = (band.h + hueOffset + 360) % 360
         const sat = Math.min(100, band.s * satMul)
         const lit = Math.min(100, band.l * litMul)
         const a = Math.min(globalAlpha * band.alpha, 1)
         const edge = Math.max(0.001, 0.5 * (1 - band.sharpness))
-        const c0 = `hsla(${hue}, ${sat}%, ${lit}%, 0)`
-        const c1 = `hsla(${hue}, ${sat}%, ${lit}%, ${a})`
+
+        sCtx.clearRect(0, 0, 1, STRIP_H)
+        const stripGrad = sCtx.createLinearGradient(0, 0, 0, STRIP_H)
+        stripGrad.addColorStop(0, `hsla(${hue}, ${sat}%, ${lit}%, 0)`)
+        stripGrad.addColorStop(edge, `hsla(${hue}, ${sat}%, ${lit}%, ${a})`)
+        stripGrad.addColorStop(1 - edge, `hsla(${hue}, ${sat}%, ${lit}%, ${a})`)
+        stripGrad.addColorStop(1, `hsla(${hue}, ${sat}%, ${lit}%, 0)`)
+        sCtx.fillStyle = stripGrad
+        sCtx.fillRect(0, 0, 1, STRIP_H)
+
+        // render at wrappedPos and one cycle ahead to fill gaps during wrap
+        const copies = [wrappedPos, wrappedPos + cycleLen]
+        for (let ci = 0; ci < copies.length; ci++) {
+            const bandPos = copies[ci]
+
+            // skip if entirely off-screen
+            const bandTop = gh * bandPos - halfH
+            const bandBot = gh * bandPos + halfH
+            if (bandBot < -halfH || bandTop > h + halfH) continue
+
+            // flow at band center → vertical drift
+            const fdy = FLOW_SINK.y - bandPos
+            const fdLen = Math.sqrt((FLOW_SINK.x - 0.5) ** 2 + fdy * fdy) || 0.001
+            const baseCenterY = gh * (bandPos + (fdy / fdLen) * drift * GRADIENT_DRIFT_SPEED)
 
         for (let cx = 0; cx < w; cx += BAND_COL_WIDTH) {
             const colW = Math.min(BAND_COL_WIDTH, w - cx)
@@ -142,7 +201,7 @@ function drawGradients(
 
             // flow at this column → warp phase accumulates with flow direction
             const cdx = FLOW_SINK.x - normX
-            const cdy = FLOW_SINK.y - band.pos
+            const cdy = FLOW_SINK.y - bandPos
             const cLen = Math.sqrt(cdx * cdx + cdy * cdy) || 0.001
             const colFlowX = cdx / cLen
 
@@ -158,15 +217,9 @@ function drawGradients(
                        + Math.sin(nx * 0.127 + ns * 0.5 + i * 3.4) * 0.2) * NOISE_AMP
 
             const centerY = baseCenterY + dy + ndy
-            const grad = ctx.createLinearGradient(0, centerY - halfH, 0, centerY + halfH)
-            grad.addColorStop(0, c0)
-            grad.addColorStop(edge, c1)
-            grad.addColorStop(1 - edge, c1)
-            grad.addColorStop(1, c0)
-
-            ctx.fillStyle = grad
-            ctx.fillRect(cx, 0, colW, h)
+            ctx.drawImage(strip, 0, 0, 1, STRIP_H, cx, centerY - halfH, colW, bandH)
         }
+        } // end copies loop
     }
 
     ctx.restore()
@@ -647,6 +700,44 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
 
             // Composite shifted layer onto main canvas
             ctx!.drawImage(shiftBuf!, 0, 0, shiftBuf!.width, shiftBuf!.height, 0, 0, w, h)
+
+            // === LAYER 3: Highlight ray ===
+            // Diffuse band of light along y = mx + c, gradient perpendicular to the line
+            {
+                const [rh, rs, rl] = RAY_HSL
+                const diag = Math.sqrt(w * w + h * h)
+                const halfRay = diag * RAY_WIDTH * 0.5
+
+                // normal to the line y = mx + c points in direction (-m, 1) / len
+                const nLen = Math.sqrt(RAY_SLOPE * RAY_SLOPE + 1)
+                const nx = -RAY_SLOPE / nLen
+                const ny = 1 / nLen
+
+                // point on the line at x = w/2
+                const linePx = w * 0.5
+                const linePy = RAY_INTERCEPT * h + RAY_SLOPE * linePx
+
+                // gradient endpoints: from (lineP - halfRay·n) to (lineP + halfRay·n)
+                const grad = ctx!.createLinearGradient(
+                    linePx - nx * halfRay, linePy - ny * halfRay,
+                    linePx + nx * halfRay, linePy + ny * halfRay,
+                )
+
+                const inner = 0.5 * (1 - RAY_SOFTNESS)
+                const outer = 0.5 * (1 + RAY_SOFTNESS)
+                const c0 = `hsla(${rh}, ${rs}%, ${rl}%, 0)`
+                const c1 = `hsla(${rh}, ${rs}%, ${rl}%, ${RAY_ALPHA})`
+                grad.addColorStop(0, c0)
+                grad.addColorStop(inner, c1)
+                grad.addColorStop(outer, c1)
+                grad.addColorStop(1, c0)
+
+                ctx!.save()
+                ctx!.globalCompositeOperation = 'lighter'
+                ctx!.fillStyle = grad
+                ctx!.fillRect(0, 0, w, h)
+                ctx!.restore()
+            }
         }
 
         resize()
