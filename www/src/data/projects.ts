@@ -145,7 +145,7 @@ export const projects: Project[] = [
     {
         title: 'kwami',
         year: '2025',
-        description: 'Keylogger with integrated data exfiltration via disguised HTTP headers, developed during a security internship at Orange Cyberdefense under the mentorship of a reverse engineer.',
+        description: 'Keylogger with integrated data exfiltration via disguised HTTP headers, developed during a security internship at Orange Cyberdefense.',
         tags: ['C', 'Python', 'Security'],
         featured: false,
     },

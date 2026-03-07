@@ -23,8 +23,9 @@ const WAVE_GLOBAL_AMP = 1.5        // global multiplier on wave deflection
 // contour bands: each line sweeps from one boundary to the next
 const CONTOUR_BOUNDS = [0.2, 1.0, 1.6, 2.8, 4.0] // N+1 boundaries → N sweeping lines
 const CONTOUR_CYCLE_SPEED = 2.0    // cycles per second (in simulation time)
-const CONTOUR_ALPHA = 0.5          // peak opacity — particle contours
-const CONTOUR_WIDTH = 3.0          // line width in CSS px
+const CONTOUR_ALPHA = 0.77         // peak opacity — particle contours
+const CONTOUR_WIDTH = 5.0          // line width in CSS px
+const CONTOUR_FADE = (cycle: number) => Math.pow(Math.sin(cycle * Math.PI), 0.4)  // cycle (0–1) → opacity multiplier
 
 // --- Layer 2: density-driven hue shift ---
 const HUE_SHIFT = 0                // degrees — no hue rotation, just intensity shift
@@ -490,8 +491,8 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
             canvas!.width = canvasW * dpr
             canvas!.height = canvasH * dpr
 
-            fieldW = Math.ceil(canvasW / FIELD_SCALE)
-            fieldH = Math.ceil(canvasH / FIELD_SCALE)
+            fieldW = Math.ceil(canvasW / FIELD_SCALE) + 1
+            fieldH = Math.ceil(canvasH / FIELD_SCALE) + 1
             field = new Float32Array(fieldW * fieldH)
 
             shiftBuf = document.createElement('canvas')
@@ -670,25 +671,7 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
             shiftCtx!.clearRect(0, 0, w, h)
             drawGradients(shiftCtx!, w, h, GRADIENT_ALPHA, time, driftAccum, HUE_SHIFT, HUE_SHIFT_SAT_BOOST, HUE_SHIFT_LIT_DROP, gradientHeight)
 
-            // Carve contour lines out of the shifted layer (destination-out)
-            // The contours become absence — the original gradient showing through the complement
-            shiftCtx!.globalCompositeOperation = 'destination-out'
-            shiftCtx!.lineWidth = CONTOUR_WIDTH
-            shiftCtx!.lineCap = 'round'
-
-            const numBands = CONTOUR_BOUNDS.length - 1
-
-            for (let li = 0; li < numBands; li++) {
-                const cycle = (time * CONTOUR_CYCLE_SPEED + li / numBands) % 1
-                const iso = CONTOUR_BOUNDS[li] + cycle * (CONTOUR_BOUNDS[li + 1] - CONTOUR_BOUNDS[li])
-                const fade = Math.sin(cycle * Math.PI)
-
-                shiftCtx!.strokeStyle = `rgba(255, 255, 255, ${CONTOUR_ALPHA * fade})`
-                shiftCtx!.beginPath()
-                traceAndDrawContours(shiftCtx!, field, fieldW, fieldH, fScale, iso, caseBuf!, visitBuf!, fwdBuf!, bwdBuf!)
-                shiftCtx!.stroke()
-            }
-
+            // Skip contour carving on shift layer — contours drawn on main canvas after compositing
             shiftCtx!.globalCompositeOperation = 'source-over'
 
             // Mask with inverted density (bilinear upscale from field resolution)
@@ -700,6 +683,22 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
 
             // Composite shifted layer onto main canvas
             ctx!.drawImage(shiftBuf!, 0, 0, shiftBuf!.width, shiftBuf!.height, 0, 0, w, h)
+
+            // === CONTOUR LINES (bg-border colour) ===
+            {
+                ctx!.lineWidth = CONTOUR_WIDTH
+                ctx!.lineCap = 'round'
+                const numBands = CONTOUR_BOUNDS.length - 1
+                for (let li = 0; li < numBands; li++) {
+                    const cycle = (time * CONTOUR_CYCLE_SPEED + li / numBands) % 1
+                    const iso = CONTOUR_BOUNDS[li] + cycle * (CONTOUR_BOUNDS[li + 1] - CONTOUR_BOUNDS[li])
+                    const fade = CONTOUR_FADE(cycle)
+                    ctx!.strokeStyle = `rgba(16, 22, 20, ${CONTOUR_ALPHA * fade})`
+                    ctx!.beginPath()
+                    traceAndDrawContours(ctx!, field, fieldW, fieldH, fScale, iso, caseBuf!, visitBuf!, fwdBuf!, bwdBuf!)
+                    ctx!.stroke()
+                }
+            }
 
             // === LAYER 3: Highlight ray ===
             // Diffuse band of light along y = mx + c, gradient perpendicular to the line

@@ -15,14 +15,20 @@ const HOVER_COMPUTE_FPS = 30       // Mandelbrot generation rate (hovered)
 const RENDER_SCALE = 0.2
 
 // ── Colour palette ──────────────────────────────────────────────
-const INSIDE_RGB: [number, number, number] = [6, 2, 14]
+const INSIDE_RGB: [number, number, number] = [2, 4, 24]
 const PALETTE_SPEED = 2.5         // Colour cycles across iteration range
 const PALETTE_OFFSET = 0.65       // Phase offset
 // Per-channel: [base, amplitude, phase]
 const CH_R: [number, number, number] = [100, 155, 0]
-const CH_G: [number, number, number] = [10, 25, Math.PI]
-const CH_B: [number, number, number] = [100, 155, 0.3]
+const CH_G: [number, number, number] = [4, 12, Math.PI]
+const CH_B: [number, number, number] = [100, 155, 100]
 const EMA_DECAY = 0.92            // Blend weight for previous frame (0 = no trail, 1 = frozen)
+
+// ── Saturation bands ────────────────────────────────────────────
+const SAT_INTENSITY = 0.6              // Max desaturation (0 = none, 1 = full grayscale)
+const SAT_SCALE = 3.0                  // Pattern frequency (higher = more bands)
+const SAT_DRIFT: [number, number] = [0.0, -0.5]  // Pattern scroll per second (x, y); negative y = upward
+const SAT_SHAPE = (t: number) => 0.5 + 0.5 * Math.sin(t)  // Transition function (0–1)
 
 const TWO_PI = Math.PI * 2
 
@@ -67,6 +73,7 @@ export default function MandelbrotCanvas({ className }: Props) {
         let currentFPS = COMPUTE_FPS
         let hovered = false
         let prevTime = 0
+        let satTime = 0
         let rafId: number
 
         canvas.addEventListener('mouseenter', () => { hovered = true })
@@ -114,6 +121,7 @@ export default function MandelbrotCanvas({ className }: Props) {
         function tick(time: number) {
             const rawDt = prevTime ? time - prevTime : 16
             prevTime = time
+            satTime += rawDt * 0.001
 
             // Smoothly interpolate compute rate toward target (exponential ease)
             const targetFPS = hovered ? HOVER_COMPUTE_FPS : COMPUTE_FPS
@@ -139,6 +147,24 @@ export default function MandelbrotCanvas({ className }: Props) {
                 d[off + 1] = accum[ai + 1]
                 d[off + 2] = accum[ai + 2]
                 d[off + 3] = 255
+            }
+
+            // Saturation band post-processing
+            for (let p = 0; p < rw * rh; p++) {
+                const px = p % rw
+                const py = (p - px) / rw
+                const nx = px / rw
+                const ny = py / rh
+                const t = TWO_PI * SAT_SCALE * (ny + SAT_DRIFT[1] * satTime)
+                        + TWO_PI * SAT_SCALE * (nx + SAT_DRIFT[0] * satTime)
+                const sat = SAT_INTENSITY * SAT_SHAPE(t)
+                const off = p * 4
+                const r = d[off], g = d[off + 1], b = d[off + 2]
+                const lum = 0.299 * r + 0.587 * g + 0.114 * b
+                const keep = 1 - sat
+                d[off]     = lum + (r - lum) * keep
+                d[off + 1] = lum + (g - lum) * keep
+                d[off + 2] = lum + (b - lum) * keep
             }
 
             octx.putImageData(img, 0, 0)
