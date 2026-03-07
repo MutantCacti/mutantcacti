@@ -8,11 +8,11 @@ import Card from './Card'
 
 type MediaItem =
     | { type: 'image'; src: string; alt: string; credit?: string }
-    | { type: 'video'; youtubeId: string; title: string; alt: string; credit?: string }
+    | { type: 'video'; youtubeId: string; title: string; alt: string; credit?: string; footnote?: string }
 
 export default function ProjectCard({ title, year, description, tags, images, videos, repoUrl, credit: projectCredit }: Project) {
     const media: MediaItem[] = [
-        ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid, credit: vid.credit })),
+        ...(videos ?? []).map(vid => ({ type: 'video' as const, ...vid, credit: vid.credit, footnote: vid.footnote })),
         ...(images ?? []).map(img => ({ type: 'image' as const, ...img, credit: img.credit })),
     ]
     const thumbnail = images?.[0]
@@ -212,34 +212,41 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                                 onTouchEnd={handleTouchEnd}
                             >
                                 {currentItem.type === 'video' ? (
-                                    <div key={previewIndex} className='relative aspect-video w-full h-full max-h-full' onClick={e => e.stopPropagation()}>
-                                        {videoInteractive ? (
-                                            <iframe
-                                                src={`https://www.youtube-nocookie.com/embed/${currentItem.youtubeId}?rel=0&autoplay=1`}
-                                                title={currentItem.title}
-                                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                                                allowFullScreen
-                                                className='w-full h-full rounded-lg'
-                                            />
-                                        ) : (
-                                            <button
-                                                className='w-full h-full rounded-lg overflow-hidden cursor-pointer group/play'
-                                                onClick={() => setVideoInteractive(true)}
-                                                aria-label={`Play ${currentItem.title}`}
-                                            >
-                                                <img
-                                                    src={`https://img.youtube.com/vi/${currentItem.youtubeId}/hqdefault.jpg`}
-                                                    alt={currentItem.alt}
-                                                    className='w-full h-full object-cover'
+                                    <>
+                                        <div key={previewIndex} className='relative aspect-video w-full h-full max-h-full' onClick={e => e.stopPropagation()}>
+                                            {videoInteractive ? (
+                                                <iframe
+                                                    src={`https://www.youtube-nocookie.com/embed/${currentItem.youtubeId}?rel=0&autoplay=1`}
+                                                    title={currentItem.title}
+                                                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                                    allowFullScreen
+                                                    className='w-full h-full rounded-lg'
                                                 />
-                                                <div className='absolute inset-0 flex items-center justify-center bg-black/20 group-hover/play:bg-black/30 transition'>
-                                                    <svg className='w-16 h-16 text-white drop-shadow-lg' viewBox='0 0 24 24' fill='currentColor'>
-                                                        <path d='M8 5v14l11-7z' />
-                                                    </svg>
-                                                </div>
-                                            </button>
+                                            ) : (
+                                                <button
+                                                    className='w-full h-full rounded-lg overflow-hidden cursor-pointer group/play'
+                                                    onClick={() => setVideoInteractive(true)}
+                                                    aria-label={`Play ${currentItem.title}`}
+                                                >
+                                                    <img
+                                                        src={`https://img.youtube.com/vi/${currentItem.youtubeId}/hqdefault.jpg`}
+                                                        alt={currentItem.alt}
+                                                        className='w-full h-full object-cover'
+                                                    />
+                                                    <div className='absolute inset-0 flex items-center justify-center bg-black/20 group-hover/play:bg-black/30 transition'>
+                                                        <svg className='w-16 h-16 text-white drop-shadow-lg' viewBox='0 0 24 24' fill='currentColor'>
+                                                            <path d='M8 5v14l11-7z' />
+                                                        </svg>
+                                                    </div>
+                                                </button>
+                                            )}
+                                        </div>
+                                        {currentItem.footnote && (
+                                            <p className='text-xs text-white/50 mt-2 text-center italic' onClick={e => e.stopPropagation()}>
+                                                {currentItem.footnote}
+                                            </p>
                                         )}
-                                    </div>
+                                    </>
                                 ) : (
                                     <img
                                         key={previewIndex}

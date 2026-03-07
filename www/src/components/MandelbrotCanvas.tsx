@@ -1,0 +1,157 @@
+import { useRef, useEffect } from 'react'
+
+// ── Fractal target ──────────────────────────────────────────────
+const CENTER_RE = -1.401155       // Antenna tip (period-doubling accumulation)
+const CENTER_IM = 0
+const ROTATION = Math.PI / 2     // Antenna points downward on screen
+const MAX_ITER = 160
+
+// ── Zoom ────────────────────────────────────────────────────────
+const RADIUS_START = 0.002        // View half-height in complex units (close)
+const RADIUS_MAX = 3.0            // Reset zoom when set is too small to see
+const ZOOM_RATE = 0.015           // Exponential zoom-out per compute frame
+const COMPUTE_FPS = 0.5           // Mandelbrot generation rate (idle)
+const HOVER_COMPUTE_FPS = 30       // Mandelbrot generation rate (hovered)
+const RENDER_SCALE = 0.2
+
+// ── Colour palette ──────────────────────────────────────────────
+const INSIDE_RGB: [number, number, number] = [6, 2, 14]
+const PALETTE_SPEED = 2.5         // Colour cycles across iteration range
+const PALETTE_OFFSET = 0.65       // Phase offset
+// Per-channel: [base, amplitude, phase]
+const CH_R: [number, number, number] = [100, 155, 0]
+const CH_G: [number, number, number] = [10, 25, Math.PI]
+const CH_B: [number, number, number] = [100, 155, 0.3]
+const EMA_DECAY = 0.92            // Blend weight for previous frame (0 = no trail, 1 = frozen)
+
+const TWO_PI = Math.PI * 2
+
+type Props = { className?: string }
+
+export default function MandelbrotCanvas({ className }: Props) {
+    const canvasRef = useRef<HTMLCanvasElement>(null)
+
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+
+        const w = canvas.clientWidth
+        const h = canvas.clientHeight
+        if (!w || !h) return
+        canvas.width = w
+        canvas.height = h
+
+        const rw = Math.max(1, Math.ceil(w * RENDER_SCALE))
+        const rh = Math.max(1, Math.ceil(h * RENDER_SCALE))
+        const cosR = Math.cos(ROTATION)
+        const sinR = Math.sin(ROTATION)
+
+        // Reusable render buffer
+        const oc = document.createElement('canvas')
+        oc.width = rw
+        oc.height = rh
+        const octx = oc.getContext('2d')!
+        const img = octx.createImageData(rw, rh)
+        const d = img.data
+
+        // Latest computed Mandelbrot frame (RGB floats)
+        const raw = new Float32Array(rw * rh * 3)
+        // EMA accumulator blending toward raw each display frame
+        const accum = new Float32Array(rw * rh * 3)
+        const pixelCount = rw * rh * 3
+
+        let radius = RADIUS_START
+        let lastCompute = 0
+        let currentFPS = COMPUTE_FPS
+        let hovered = false
+        let prevTime = 0
+        let rafId: number
+
+        canvas.addEventListener('mouseenter', () => { hovered = true })
+        canvas.addEventListener('mouseleave', () => { hovered = false })
+
+        function compute() {
+            const step = (radius * 2) / rh
+
+            for (let py = 0; py < rh; py++) {
+                for (let px = 0; px < rw; px++) {
+                    const dx = (px + 0.5 - rw / 2) * step
+                    const dy = (py + 0.5 - rh / 2) * step
+                    const re = CENTER_RE + dx * cosR - dy * sinR
+                    const im = CENTER_IM + dx * sinR + dy * cosR
+
+                    let zr = 0, zi = 0, i = 0
+                    while (i < MAX_ITER && zr * zr + zi * zi < 4) {
+                        const tmp = zr * zr - zi * zi + re
+                        zi = 2 * zr * zi + im
+                        zr = tmp
+                        i++
+                    }
+
+                    const ai = (py * rw + px) * 3
+                    if (i === MAX_ITER) {
+                        raw[ai] = INSIDE_RGB[0]; raw[ai + 1] = INSIDE_RGB[1]; raw[ai + 2] = INSIDE_RGB[2]
+                    } else {
+                        const smooth = i + 1 - Math.log2(Math.log2(zr * zr + zi * zi))
+                        const p = TWO_PI * (smooth / MAX_ITER * PALETTE_SPEED + PALETTE_OFFSET)
+                        raw[ai]     = CH_R[0] + CH_R[1] * Math.sin(p + CH_R[2])
+                        raw[ai + 1] = CH_G[0] + CH_G[1] * Math.sin(p + CH_G[2])
+                        raw[ai + 2] = CH_B[0] + CH_B[1] * Math.sin(p + CH_B[2])
+                    }
+                }
+            }
+
+            radius *= 1 + ZOOM_RATE
+            if (radius > RADIUS_MAX) radius = RADIUS_START
+        }
+
+        // Compute first frame immediately so accum has something to blend toward
+        compute()
+        accum.set(raw)
+
+        function tick(time: number) {
+            const rawDt = prevTime ? time - prevTime : 16
+            prevTime = time
+
+            // Smoothly interpolate compute rate toward target (exponential ease)
+            const targetFPS = hovered ? HOVER_COMPUTE_FPS : COMPUTE_FPS
+            currentFPS += (targetFPS - currentFPS) * (1 - Math.exp(-rawDt * 0.002))
+
+            // Compute new Mandelbrot frame on schedule
+            if (time - lastCompute >= 1000 / currentFPS) {
+                lastCompute = time
+                compute()
+            }
+
+            // Blend accumulator toward latest raw frame every display frame
+            const fresh = 1 - EMA_DECAY
+            for (let j = 0; j < pixelCount; j++) {
+                accum[j] = accum[j] * EMA_DECAY + raw[j] * fresh
+            }
+
+            // Write accumulator to ImageData
+            for (let p = 0; p < rw * rh; p++) {
+                const ai = p * 3
+                const off = p * 4
+                d[off]     = accum[ai]
+                d[off + 1] = accum[ai + 1]
+                d[off + 2] = accum[ai + 2]
+                d[off + 3] = 255
+            }
+
+            octx.putImageData(img, 0, 0)
+            ctx.imageSmoothingEnabled = false
+            ctx.drawImage(oc, 0, 0, w, h)
+
+            rafId = requestAnimationFrame(tick)
+        }
+
+        rafId = requestAnimationFrame(tick)
+
+        return () => cancelAnimationFrame(rafId)
+    }, [])
+
+    return <canvas ref={canvasRef} className={className} style={{ touchAction: 'pan-y' }} />
+}

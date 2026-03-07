@@ -38,6 +38,7 @@ export type ProjectVideo = {
     title: string
     alt: string
     credit?: string
+    footnote?: string
 }
 
 export type Project = {
@@ -56,7 +57,7 @@ export const projects: Project[] = [
     {
         title: 'AI Rotate',
         year: '2026',
-        description: 'Research project using hybrid ML and deterministic algorithms to correct the orientation of sensor tags on free-ranging whales. My role: deploying the inference pipeline onto embedded hardware with power-efficient duty cycling.',
+        description: 'Research project using hybrid ML and deterministic algorithms to correct the orientation of sensor tags on free-ranging whales. I will deploy Han Yin\'s inference pipeline onto embedded hardware with power-efficient duty cycling.',
         tags: ['TFLite Micro', 'C', 'STM32', 'Python'],
         credit: 'Dr Juan Ye, Prof Patrick Miller, George Sato, Han Yin',
         images: [
@@ -97,7 +98,7 @@ export const projects: Project[] = [
             { src: caretakerPlatforms, alt: 'Ink sketches of organic mushroom platforms, rattle staircases, and twisted tree formations' },
         ],
         videos: [
-            { youtubeId: 'he8ICyA8iz4', title: 'Caretaker animated storyboard', alt: 'Animated storyboard introducing the Caretaker story' },
+            { youtubeId: 'he8ICyA8iz4', title: 'Caretaker animated storyboard', alt: 'Animated storyboard introducing the Caretaker story', footnote: "I still wish I'd animated the weaving clip at the end." },
             { youtubeId: 'MIz3qVXEH5U', title: 'Caretaker gameplay demo', alt: 'Gameplay demo showing movement, shifting, and combat mechanics' },
         ],
         repoUrl: 'https://github.com/MutantCacti/Caretaker/',
