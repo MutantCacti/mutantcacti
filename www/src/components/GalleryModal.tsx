@@ -27,7 +27,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
         prevFocus.current = document.activeElement
         modalRef.current?.focus()
         return () => {
-            (prevFocus.current as HTMLElement)?.focus?.()
+            if (prevFocus.current instanceof HTMLElement) prevFocus.current.focus()
         }
     }, [])
 
@@ -94,7 +94,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             }
             const first = focusable[0]
             const last = focusable[focusable.length - 1]
-            const isOnChild = Array.from(focusable).includes(document.activeElement as HTMLElement)
+            const isOnChild = document.activeElement instanceof HTMLElement && Array.from(focusable).includes(document.activeElement)
             if (!isOnChild) {
                 e.preventDefault()
                 ;(e.shiftKey ? last : first).focus()
@@ -130,7 +130,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
         if (item.type === 'video') {
             return (
                 <div className='relative w-full h-full'>
-                    <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt='' className='w-full h-full object-cover' />
+                    <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt={item.alt} className='w-full h-full object-cover' />
                     <div className='absolute inset-0 flex items-center justify-center'>
                         <svg className='w-5 h-5 text-white drop-shadow-lg' viewBox='0 0 24 24' fill='currentColor'>
                             <path d='M9.5 6.5l9 5.5-9 5.5z' />
@@ -139,7 +139,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                 </div>
             )
         }
-        return <img src={item.src} alt='' className='w-full h-full object-cover' />
+        return <img src={item.src} alt={item.alt} className='w-full h-full object-cover' />
     }
 
     return createPortal(
@@ -179,12 +179,12 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                                     className='w-full h-full rounded-lg pointer-events-none'
                                 />
                                 <div
-                                    className='absolute inset-0 rounded-lg'
+                                    className='absolute inset-0 rounded-lg cursor-pointer ring-1 ring-white/20 hover:ring-white/40 transition-all'
                                     onClickCapture={e => {
                                         e.stopPropagation()
                                         const iframe = e.currentTarget.previousElementSibling as HTMLIFrameElement
                                         iframe.classList.remove('pointer-events-none')
-                                        e.currentTarget.classList.add('pointer-events-none')
+                                        e.currentTarget.classList.add('pointer-events-none', 'opacity-0')
                                     }}
                                 />
                             </div>

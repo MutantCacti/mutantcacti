@@ -20,7 +20,7 @@ export default function Poem({
 
     return (
         <div
-            className="not-prose text-lg text-accent-subtle px-6"
+            className='not-prose text-sm sm:text-lg text-accent-subtle'
             style={{
                 lineHeight,
                 letterSpacing: `${letterSpacing}em`,
