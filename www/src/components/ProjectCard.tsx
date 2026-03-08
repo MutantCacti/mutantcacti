@@ -6,6 +6,7 @@ import type { MediaItem } from './GalleryModal'
 import GalleryModal from './GalleryModal'
 import Tiltable from './Tiltable'
 import Card from './Card'
+import CreditPills from './CreditPills'
 
 export default function ProjectCard({ title, year, description, tags, images, videos, repoUrl, credit: projectCredit }: Project) {
     const media: MediaItem[] = [
@@ -36,7 +37,7 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                                 className='w-full h-full object-cover transition group-hover:brightness-110'
                             />
                             <span className='absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1'>
-                                <svg className='w-3 h-3' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                                <svg className='w-3 h-3' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden='true'>
                                     <rect x='3' y='3' width='7' height='7' rx='1' />
                                     <rect x='14' y='3' width='7' height='7' rx='1' />
                                     <rect x='3' y='14' width='7' height='7' rx='1' />
@@ -45,7 +46,7 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                                 {media.length}
                             </span>
                             <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition flex items-center justify-center'>
-                                <svg className='w-8 h-8 text-white' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5'>
+                                <svg className='w-8 h-8 text-white' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' aria-hidden='true'>
                                     <path d='M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7' />
                                 </svg>
                             </div>
@@ -80,15 +81,7 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                         </span>
                     )}
                 </div>
-                {projectCredit && (
-                    <div className='flex flex-wrap gap-2'>
-                        {projectCredit.split(',').map(s => s.trim()).filter(s => !s.startsWith('@')).map(name => (
-                            <span key={name} className='bg-accent-dark/10 hover:bg-accent-light/10 transition delay-75 duration:100 ease-in backdrop-blur-sm text-xs px-2 py-1 rounded-full text-accent-light whitespace-nowrap'>
-                                {name}
-                            </span>
-                        ))}
-                    </div>
-                )}
+                {projectCredit && <CreditPills credit={projectCredit} />}
                 <p className='text-text'>{description}</p>
                 <div className='flex flex-wrap gap-2 mt-1'>
                     {tags.map(tag => (
