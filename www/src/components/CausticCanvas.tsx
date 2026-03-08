@@ -23,8 +23,8 @@ const WAVE_GLOBAL_AMP = 1.5        // global multiplier on wave deflection
 // contour bands: each line sweeps from one boundary to the next
 const CONTOUR_BOUNDS = [0.2, 1.0, 1.6, 2.8, 4.0] // N+1 boundaries → N sweeping lines
 const CONTOUR_CYCLE_SPEED = 2.0    // cycles per second (in simulation time)
-const CONTOUR_ALPHA = 0.77         // peak opacity — particle contours
-const CONTOUR_WIDTH = 4.0          // line width in CSS px
+const CONTOUR_ALPHA = 0.81         // peak opacity — particle contours
+const CONTOUR_WIDTH = 3.0          // line width in CSS px
 const CONTOUR_FADE = (cycle: number) => Math.pow(Math.sin(cycle * Math.PI), 0.4)  // cycle (0–1) → opacity multiplier
 
 // ── Layer 2: density-driven hue shift ───────────────────────────
@@ -36,7 +36,7 @@ const INVERSION_SENSITIVITY = 0.8
  // how quickly density suppresses the shift
 
 // ── Highlight ray ───────────────────────────────────────────────
-const RAY_ALPHA = 0.09              // peak opacity of the ray
+const RAY_ALPHA = 0.12              // peak opacity of the ray
 const RAY_HSL: [number, number, number] = [200, 30, 92]  // near-white with a cool tint
 const RAY_WIDTH = 0.25              // width of the ray as a fraction of the canvas diagonal
 const RAY_SOFTNESS = 0.4            // 0 = hard edge, 1 = fully feathered
@@ -70,12 +70,12 @@ const BAND_SCROLL_MARGIN = 0.1     // extra margin beyond band width before wrap
 const GRADIENT_BANDS = [
     { h: 175, s: 35, l: 40, alpha: 0.5, pos: 2.3, width: 0.8, sharpness: 0, warpPhase: 0, warpFreq: 0.06, scrollSpeed: 1.0 },       // deep turquoise
     { h: 350, s: 70, l: 70, alpha: 0.2, pos: 2.0, width: 0.15, sharpness: 0.1, warpPhase: 0.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // rose-white
-    { h: 160, s: 40, l: 40, alpha: 0.4, pos: 1.5, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.2, scrollSpeed: 1.0 },      // dark turquoise
-    { h: 190, s: 50, l: 60, alpha: 0.3, pos: 1.2, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01, scrollSpeed: 1.0 },      // light cyan
+    { h: 190, s: 40, l: 40, alpha: 0.4, pos: 1.5, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.2, scrollSpeed: 1.0 },      // dark turquoise
+    { h: 190, s: 50, l: 60, alpha: 0.7, pos: 1.2, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01, scrollSpeed: 1.0 },      // light cyan
     { h: 175, s: 35, l: 40, alpha: 0.5, pos: 0.85, width: 0.8, sharpness: 0, warpPhase: 0, warpFreq: 0.06, scrollSpeed: 1.0 },       // deep turquoise — low, wide, diffuse
-    { h: 160, s: 65, l: 70, alpha: 0.2, pos: 0.45, width: 0.4, sharpness: 0.1, warpPhase: 1.0, warpFreq: 0.02, scrollSpeed: 1.0 },    // lighter turquoise
-    { h: 190, s: 50, l: 60, alpha: 0.3, pos: 0.1, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01, scrollSpeed: 1.0 },      // light cyan
-    { h: 150, s: 100, l: 40, alpha: 0.1, pos: 0.06, width: 0.6, sharpness: 0.01, warpPhase: 1273618273612.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // accent highlight
+    { h: 190, s: 65, l: 70, alpha: 0.2, pos: 0.45, width: 0.4, sharpness: 0.1, warpPhase: 1.0, warpFreq: 0.02, scrollSpeed: 1.0 },    // lighter turquoise
+    { h: 190, s: 50, l: 60, alpha: 0.7, pos: 0.1, width: 0.4, sharpness: 0, warpPhase: 3.0, warpFreq: 0.01, scrollSpeed: 1.0 },      // light cyan
+    { h: 34, s: 70, l: 60, alpha: 0.1, pos: 0.06, width: 0.6, sharpness: 0.01, warpPhase: 1273618273612.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // accent highlight
     { h: 350, s: 70, l: 70, alpha: 0.2, pos: -0.4, width: 0.35, sharpness: 0.1, warpPhase: 0.0, warpFreq: 0.1, scrollSpeed: 1.0 },      // rose-white
 ]
 

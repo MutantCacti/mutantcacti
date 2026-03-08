@@ -7,16 +7,23 @@ type TiltableProps = HTMLAttributes<HTMLDivElement> & {
     perspective?: number
 }
 
+// Detect once at module level — no re-renders, no flash of perspective
+const IS_TOUCH = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
 export default function Tiltable({ children, maxAngle = 15, perspective = 600, className, style, ...rest }: TiltableProps) {
+    // On touch devices, just render a plain div
+    if (IS_TOUCH) {
+        return (
+            <div className={className} style={style} {...rest}>
+                {children}
+            </div>
+        )
+    }
+
     const innerRef = useRef<HTMLDivElement>(null)
     const reducedMotion = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     const settling = useRef(false)
     const rafPending = useRef(false)
-    const [isTouch, setIsTouch] = useState(false)
-
-    useEffect(() => {
-        setIsTouch(window.matchMedia('(pointer: coarse)').matches)
-    }, [])
 
     function handleEnter() {
         const el = innerRef.current
@@ -53,7 +60,7 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
     return (
         <div
             className={className}
-            style={{ ...(!isTouch && { perspective: `${perspective}px` }), ...style }}
+            style={{ perspective: `${perspective}px`, ...style }}
             onMouseEnter={handleEnter}
             onMouseMove={handleMove}
             onMouseLeave={handleLeave}

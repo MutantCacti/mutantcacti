@@ -56,7 +56,7 @@ export default function Blog() {
                     <Link key={cat.slug} to={`/blog/${cat.slug}`} className='rounded-lg' draggable={false}>
                         <Tiltable className='h-full'>
                             <div className='bg-bg border border-border rounded-lg overflow-hidden h-full'>
-                                <div className='relative h-40 sm:will-change-transform'>
+                                <div className='relative h-40 sm:will-change-transform' style={{ clipPath: 'inset(0 round 0 0 15% 15%)' }}>
                                     {cat.slug === 'essays'
                                         ? <HilbertCanvas iterations={4} strokeMultiplier={0.15} className='absolute inset-0 w-full h-full' mobileScaleBase='height' />
                                         : cat.slug === 'poetry'
@@ -66,13 +66,8 @@ export default function Blog() {
                                         : <div className='absolute inset-0 bg-surface' />
                                     }
                                     <div className='absolute inset-0 pointer-events-none' style={{ boxShadow: 'inset 0 0 12px 4px hsla(0, 0%, 100%, 0.18)' }} />
-                                    <div className='absolute inset-0 pointer-events-none' style={{
-                                        borderRadius: '0 0 15% 15%',
-                                        boxShadow: '0 0 0 9999px var(--color-bg)',
-                                    }} />
                                     <div className='absolute pointer-events-none' style={{
                                         inset: '0 0 -1px 0',
-                                        borderRadius: '0 0 15% 15%',
                                         boxShadow: 'inset 0 -60px 40px -10px var(--color-bg)',
                                     }} />
                                 </div>
@@ -96,8 +91,8 @@ export default function Blog() {
                             return (
                                 <Link key={post.slug} to={`/blog/${cat?.slug ?? 'essays'}/${post.slug}`} state={{ from: '/blog', label: 'Blog' }} draggable={false} className='group'>
                                     <Card className='w-full'>
-                                        <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
-                                            <h3 className='text-accent-light text-lg group-hover:underline decoration-accent-light underline-offset-2'>{post.title}</h3>
+                                        <h3 className='text-accent-light text-lg group-hover:underline decoration-accent-light underline-offset-2'>{post.title}</h3>
+                                        <div className='flex items-center gap-2 mt-1'>
                                             <TimeAge date={post.date} className='text-text-muted text-sm' />
                                             {cat && <span className='text-text-muted text-xs bg-border px-2 py-0.5 rounded'>{cat.label}</span>}
                                         </div>

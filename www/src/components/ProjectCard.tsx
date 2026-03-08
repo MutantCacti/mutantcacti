@@ -34,6 +34,7 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                             <img
                                 src={thumbnail.src}
                                 alt={thumbnail.alt}
+                                decoding='async'
                                 className='w-full h-full object-cover transition group-hover:brightness-110'
                             />
                             <span className='absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1'>

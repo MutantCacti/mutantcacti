@@ -4,13 +4,13 @@
 
 For the Music category card on Blog.
 
+## Add an <Image/> MDX component for posts
+
 ## Write a music player component.
 
 This should be made stateful in Layout so that navigating around the site keeps tracks playing.
 
 ## Find the original notebook with Video and get the more accurate date
-
-## Add --- as an em dash in MDX
 
 ## Implement lightweight data collection for A/B testing
 
@@ -20,7 +20,19 @@ Build a simple analytics/event system that can track user interactions for A/B e
 
 ## Add back to top button
 
-For long pages, a button anchored to the bottom of the page with an arrow upwards that says "Back to top." Needs to be correctly in the tab order (at the bottom) and positioned relative to the viewport.
+For long pages, a button anchored to the bottom of the page with an arrow upwards that says "Back to top." Needs to be correctly in the tab order (at the bottom) and positioned relative to the viewport. 
+
+## Add comments to the blog
+
+Making the backend should be taken seriously and paired with future ideas like A/B testing to ensure extensibility.
+
+## Add upvotes to the blog
+
+For example prompt at the bottom of the blog: "Did you like this post? Please give it a vote to help sort the blog better for other visitors."
+
+## Full project pages
+
+Content heavy addition--add full pages with description, reflection, technical details of projects in Projects.
 
 ## Add [Dragon Attack](https://scratch.mit.edu/projects/142487281) scratch post 
 

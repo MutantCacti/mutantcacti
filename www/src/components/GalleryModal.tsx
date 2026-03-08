@@ -17,7 +17,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
     const mobileStripRef = useRef<HTMLDivElement>(null)
     const desktopStripRef = useRef<HTMLDivElement>(null)
     const slideDir = useRef<1 | -1>(1)
-    const touchStart = useRef<number | null>(null)
+    const touchStart = useRef<{ x: number; y: number } | null>(null)
     const prevFocus = useRef<Element | null>(null)
 
     const currentItem = media[index]
@@ -109,20 +109,36 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
     }
 
     function handleTouchStart(e: React.TouchEvent) {
-        touchStart.current = e.touches[0].clientX
+        const t = e.target as Node
+        if (mobileStripRef.current?.contains(t) || desktopStripRef.current?.contains(t)) {
+            touchStart.current = null
+            return
+        }
+        touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
     }
 
     function handleTouchEnd(e: React.TouchEvent) {
-        if (touchStart.current === null || !media.length) return
-        const diff = e.changedTouches[0].clientX - touchStart.current
+        if (!touchStart.current) return
+        const dx = e.changedTouches[0].clientX - touchStart.current.x
+        const dy = e.changedTouches[0].clientY - touchStart.current.y
         touchStart.current = null
-        if (Math.abs(diff) < 50) return
-        if (diff < 0) {
-            slideDir.current = 1
-            setIndex(i => (i + 1) % media.length)
-        } else {
-            slideDir.current = -1
-            setIndex(i => (i - 1 + media.length) % media.length)
+
+        const absDx = Math.abs(dx)
+        const absDy = Math.abs(dy)
+        if (absDx < 50 && absDy < 50) return
+
+        if (absDy > absDx) {
+            // vertical swipe — close
+            onClose()
+        } else if (absDx > absDy && media.length) {
+            // horizontal swipe — navigate
+            if (dx < 0) {
+                slideDir.current = 1
+                setIndex(i => (i + 1) % media.length)
+            } else {
+                slideDir.current = -1
+                setIndex(i => (i - 1 + media.length) % media.length)
+            }
         }
     }
 
@@ -130,7 +146,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
         if (item.type === 'video') {
             return (
                 <div className='relative w-full h-full'>
-                    <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt={item.alt} className='w-full h-full object-cover' />
+                    <img src={`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`} alt={item.alt} loading='lazy' className='w-full h-full object-cover' />
                     <div className='absolute inset-0 flex items-center justify-center'>
                         <svg className='w-5 h-5 text-white drop-shadow-lg' viewBox='0 0 24 24' fill='currentColor'>
                             <path d='M9.5 6.5l9 5.5-9 5.5z' />
@@ -139,7 +155,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                 </div>
             )
         }
-        return <img src={item.src} alt={item.alt} className='w-full h-full object-cover' />
+        return <img src={item.src} alt={item.alt} loading='lazy' className='w-full h-full object-cover' />
     }
 
     return createPortal(
@@ -152,6 +168,8 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             className='fixed inset-0 z-50 flex flex-col sm:flex-row items-center justify-center gap-4 bg-black/80 p-4 sm:p-8 outline-none'
             onClick={onClose}
             onKeyDown={handleKeyDown}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
         >
             <button
                 onClick={e => { e.stopPropagation(); onClose() }}
@@ -165,8 +183,6 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             <div className='flex flex-col items-center gap-2 w-full sm:flex-1 sm:min-w-0 sm:max-w-[70vw] sm:h-[80vh]'>
                 <div
                     className='relative flex items-center justify-center min-h-0 flex-1'
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
                 >
                     {currentItem.type === 'video' ? (
                         <>

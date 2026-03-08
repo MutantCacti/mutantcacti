@@ -1,7 +1,7 @@
 # v1.0 Release Requirements
 
 ## Content
-- [ ] At least 3 posts in Essays
+- [ ] At least 1 post in Essays
 - [x] At least 3 posts in Poetry
 - [ ] At least 3 posts in Music
 
@@ -27,11 +27,10 @@
 - [x] MDX links open in new tab (a override in mdxComponents)
 
 ## Testing
-- [ ] Accessibility code review
+- [x] Accessibility code review
 - [ ] Mobile audit
 - [ ] Keyboard audit
 - [ ] Screen reader audit
-- [ ] Switch control audit (?)
 
 ## Post-release
 - Blog canvas performance audits

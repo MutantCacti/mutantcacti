@@ -7,37 +7,23 @@ export default function Projects() {
     const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
     useEffect(() => {
-        function updateActive() {
-            const atTop = window.scrollY <= 0
-            const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1
-            if (atTop) { setActiveIndex(0); return }
-            if (atBottom) { setActiveIndex(projects.length - 1); return }
-
-            const viewCenter = window.innerHeight / 2
-            let closest = 0
-            let closestDist = Infinity
-            for (let i = 0; i < cardRefs.current.length; i++) {
-                const el = cardRefs.current[i]
-                if (!el) continue
-                const rect = el.getBoundingClientRect()
-                const cardCenter = rect.top + rect.height / 2
-                const dist = Math.abs(cardCenter - viewCenter)
-                if (dist < closestDist) {
-                    closestDist = dist
-                    closest = i
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        const idx = cardRefs.current.indexOf(entry.target as HTMLDivElement)
+                        if (idx !== -1) setActiveIndex(idx)
+                    }
                 }
-            }
-            setActiveIndex(closest)
+            },
+            { rootMargin: '-50% 0px -50% 0px' },
+        )
+
+        for (const el of cardRefs.current) {
+            if (el) observer.observe(el)
         }
 
-        let rafId = 0
-        function onScroll() {
-            if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; updateActive() })
-        }
-
-        updateActive()
-        window.addEventListener('scroll', onScroll, { passive: true })
-        return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(rafId) }
+        return () => observer.disconnect()
     }, [])
 
     function scrollTo(index: number) {

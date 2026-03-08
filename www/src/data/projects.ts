@@ -2,22 +2,21 @@ import accessibubbleLanding from '../assets/images/accessibubble-screenshot-2.we
 import accessibubbleAudit from '../assets/images/accessibubble-screenshot-1.webp'
 import rotateFrames from '../assets/images/rotateai-1.webp'
 import rotateValidation from '../assets/images/rotateai-2.webp'
-import cinnamonConceptArt1 from '../assets/images/cinnamon-concept-art-1.webp'
-import cinnamonConceptArt2 from '../assets/images/cinnamon-concept-art-2.webp'
-import cinnamonConceptArt3 from '../assets/images/cinnamon-concept-art-3.webp'
+import cinnamonFrog from '../assets/images/cinnamon-frog.webp'
+import cinnamonSprites from '../assets/images/cinnamon-sprites.webp'
+import cinnamonSprites2 from '../assets/images/cinnamon-sprites-2.webp'
 import cinnamonCouplingBefore from '../assets/images/cinnamon-coupling-before.webp'
 import cinnamonCouplingAfter from '../assets/images/cinnamon-coupling-after.webp'
 import cinnamonGameplay from '../assets/images/cinnamon-gameplay.webp'
 import cinnamonInitFlow from '../assets/images/cinnamon-init-flow.webp'
 import cinnamonMusic from '../assets/images/cinnamon-music.webp'
+import caretakerCaretaker from '../assets/images/caretaker-caretaker.webp'
 import caretakerCanyon from '../assets/images/caretaker-canyon.webp'
-import caretakerArcaneEgg from '../assets/images/caretaker-arcane-egg.webp'
-import caretakerOceanPlane from '../assets/images/caretaker-ocean-plane.webp'
-import caretakerGateway from '../assets/images/caretaker-gateway.webp'
+import caretakerOceans from '../assets/images/caretaker-oceans.webp'
 import caretakerPillars from '../assets/images/caretaker-pillars.webp'
-import caretakerEnemies from '../assets/images/caretaker-enemies.webp'
-import caretakerCreatures from '../assets/images/caretaker-creatures.webp'
-import caretakerPlatforms from '../assets/images/caretaker-platforms.webp'
+import caretakerConstruct from '../assets/images/caretaker-construct.webp'
+import caretakerFoulkAltitude from '../assets/images/caretaker-foulk-altitude.webp'
+import caretakerMushrooms from '../assets/images/caretaker-mushrooms.webp'
 import caretakerBlenderEgg from '../assets/images/caretaker-blender-egg.webp'
 import caretakerBlenderRock from '../assets/images/caretaker-blender-rock.webp'
 import caretakerBlenderLevel from '../assets/images/caretaker-blender-level.webp'
@@ -85,17 +84,16 @@ export const projects: Project[] = [
         tags: ['Unity', 'C#', 'HLSL', 'Blender'],
         credit: '@KingLavaCactus, Toby Davies',
         images: [
-            { src: caretakerGateway, alt: 'Watercolour and ink concept art of a spiderlike cosmic being weaving threads of light inside of a universe, miniature compared to its size' },
+            { src: caretakerCaretaker, alt: 'Watercolour and ink concept art of a spiderlike cosmic being weaving threads of light inside of a universe, miniature compared to its size' },
             { src: caretakerCanyon, alt: 'Watercolour concept art of a desert canyon landscape with rock formations and caves' },
-            { src: caretakerOceanPlane, alt: 'Watercolour concept art of the ocean plane with tropical, alien, and shadow island themes' },
+            { src: caretakerOceans, alt: 'Watercolour concept art of the ocean plane with tropical, alien, and shadow island themes' },
             { src: caretakerBlenderRock, alt: 'Blender viewport showing a geometric rock base 3D model' },
             { src: caretakerBlenderLevel, alt: 'Blender viewport showing the full test level blockout layout from above', credit: '@KingLavaCactus, Toby Davies' },
             { src: caretakerBlenderEgg, alt: 'Blender viewport showing a stylised egg model with procedural shader material' },
-            { src: caretakerArcaneEgg, alt: 'Ink concept art of arcane egg designs with variable straight, spiral, atomic, and tree patterns' },
             { src: caretakerPillars, alt: 'Ink sketches of pillar and ruins architecture concepts with player scale reference' },
-            { src: caretakerEnemies, alt: 'Ink sketches of mechanical enemy designs, structures, and transport constructs' },
-            { src: caretakerCreatures, alt: 'Ink sketches of bird-like Foulk creatures, floating altitude islands, and crystals' },
-            { src: caretakerPlatforms, alt: 'Ink sketches of organic mushroom platforms, rattle staircases, and twisted tree formations' },
+            { src: caretakerConstruct, alt: 'Ink sketches of mechanical enemy designs, structures, and transport constructs' },
+            { src: caretakerFoulkAltitude, alt: 'Ink sketches of bird-like Foulk creatures, floating altitude islands, and crystals' },
+            { src: caretakerMushrooms, alt: 'Ink sketches of organic mushroom platforms, rattle staircases, and twisted tree formations' },
         ],
         videos: [
             { youtubeId: 'he8ICyA8iz4', title: 'Caretaker animated storyboard', alt: 'Animated storyboard introducing the Caretaker story', footnote: "I still wish I'd animated the weaving clip at the end." },
@@ -111,11 +109,11 @@ export const projects: Project[] = [
         tags: ['REAPER', 'Musescore', 'Game Design'],
         credit: '@KingLavaCactus, BerryBitStudio',
         images: [
-            { src: cinnamonConceptArt1, alt: 'Concept art of a frog character, coral formations, mushrooms, and small creatures' },
+            { src: cinnamonFrog, alt: 'Concept art of a frog character, coral formations, mushrooms, and small creatures' },
             { src: cinnamonGameplay, alt: 'Top-down gameplay screenshot with character, terrain, and dialogue box', credit: '@KingLavaCactus, BerryBitStudio' },
             { src: cinnamonMusic, alt: 'Music composition in REAPER DAW and MuseScore with MIDI tracks and orchestral score' },
-            { src: cinnamonConceptArt2, alt: 'Ink sketches of candy-making equipment: ovens, cauldrons, lollipops, and sweets' },
-            { src: cinnamonConceptArt3, alt: 'Ink sketches of gummy bears, a cinnamon roll, treasure chest, and flora' },
+            { src: cinnamonSprites, alt: 'Ink sketches of candy-making equipment: ovens, cauldrons, lollipops, and sweets' },
+            { src: cinnamonSprites2, alt: 'Ink sketches of gummy bears, a cinnamon roll, treasure chest, and flora' },
             { src: cinnamonCouplingBefore, alt: 'Architecture diagram showing tightly coupled manager dependencies', credit: '@KingLavaCactus, BerryBitStudio' },
             { src: cinnamonCouplingAfter, alt: 'Refactored architecture with central event system decoupling all managers', credit: '@KingLavaCactus, BerryBitStudio' },
             { src: cinnamonInitFlow, alt: 'Control flow diagram of game initialization and scene loading sequence', credit: '@KingLavaCactus, BerryBitStudio' },
