@@ -11,6 +11,7 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
     const innerRef = useRef<HTMLDivElement>(null)
     const reducedMotion = useRef(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     const settling = useRef(false)
+    const rafPending = useRef(false)
     const [isTouch, setIsTouch] = useState(false)
 
     useEffect(() => {
@@ -27,12 +28,18 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
 
     function handleMove(e: React.MouseEvent) {
         const el = innerRef.current
-        if (!el || reducedMotion.current) return
-        const rect = el.getBoundingClientRect()
-        const x = (e.clientX - rect.left) / rect.width - 0.5
-        const y = (e.clientY - rect.top) / rect.height - 0.5
-        if (!settling.current) el.style.transition = 'none'
-        el.style.transform = `rotateX(${-y * maxAngle}deg) rotateY(${x * maxAngle}deg)`
+        if (!el || reducedMotion.current || rafPending.current) return
+        const clientX = e.clientX
+        const clientY = e.clientY
+        rafPending.current = true
+        requestAnimationFrame(() => {
+            rafPending.current = false
+            const rect = el.getBoundingClientRect()
+            const x = (clientX - rect.left) / rect.width - 0.5
+            const y = (clientY - rect.top) / rect.height - 0.5
+            if (!settling.current) el.style.transition = 'none'
+            el.style.transform = `rotateX(${-y * maxAngle}deg) rotateY(${x * maxAngle}deg)`
+        })
     }
 
     function handleLeave() {
@@ -53,7 +60,7 @@ export default function Tiltable({ children, maxAngle = 15, perspective = 600, c
             onDragStart={e => e.preventDefault()}
             {...rest}
         >
-            <div ref={innerRef} className="w-full h-full">
+            <div ref={innerRef} className='w-full h-full'>
                 {children}
             </div>
         </div>

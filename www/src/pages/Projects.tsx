@@ -30,9 +30,14 @@ export default function Projects() {
             setActiveIndex(closest)
         }
 
+        let rafId = 0
+        function onScroll() {
+            if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; updateActive() })
+        }
+
         updateActive()
-        window.addEventListener('scroll', updateActive, { passive: true })
-        return () => window.removeEventListener('scroll', updateActive)
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(rafId) }
     }, [])
 
     function scrollTo(index: number) {
@@ -43,9 +48,9 @@ export default function Projects() {
     const solo = projects.filter(p => !p.featured)
 
     return (
-        <div className="w-full relative">
-            <h1 className="sr-only">Projects</h1>
-            <div className="flex flex-col gap-4">
+        <div className='w-full relative'>
+            <h1 className='sr-only'>Projects</h1>
+            <div className='flex flex-col gap-4'>
                 {featured.map((project, i) => (
                     <div
                         key={project.title}
@@ -73,8 +78,8 @@ export default function Projects() {
             </div>
             {projects.length > 1 && (
                 <nav
-                    className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col gap-3 items-center"
-                    aria-label="Project navigation"
+                    className='hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col gap-3 items-center'
+                    aria-label='Project navigation'
                 >
                     {projects.map((project, i) => (
                         <button
