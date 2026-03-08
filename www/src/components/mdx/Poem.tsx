@@ -11,8 +11,8 @@ type PoemProps = {
 export default function Poem({
     children,
     lineHeight = 2.1,
-    letterSpacing = 0.04,
-    wordSpacing = 0.03,
+    letterSpacing = 0.025,
+    wordSpacing = 0.005,
     stanzaGap = '1.5em',
 }: PoemProps) {
     const raw = extractText(children).trim()

@@ -10,11 +10,19 @@ This should be made stateful in Layout so that navigating around the site keeps 
 
 ## Find the original notebook with Video and get the more accurate date
 
+## Add --- as an em dash in MDX
+
 ## Implement lightweight data collection for A/B testing
 
 Build a simple analytics/event system that can track user interactions for A/B experiments. First candidate: whether a back-to-category link on Blog:category pages (redundant with nav) improves navigation UX or just adds clutter. Needs: event logging, variant assignment, and a way to review results.
 
 ## Scale properly to 500% zoom
+
+## Add back to top button
+
+For long pages, a button anchored to the bottom of the page with an arrow upwards that says "Back to top." Needs to be correctly in the tab order (at the bottom) and positioned relative to the viewport.
+
+## Add [Dragon Attack](https://scratch.mit.edu/projects/142487281) scratch post 
 
 ## Ask for feedback
 
