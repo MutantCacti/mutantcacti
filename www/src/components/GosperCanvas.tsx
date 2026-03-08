@@ -2,13 +2,15 @@ import { useRef, useEffect } from 'react'
 import LSystem from 'lindenmayer'
 
 // ── Config ─────────────────────────────────────────────────────
-const PARALLAX_RATE = 0.08 // 0 = fixed, 1 = scrolls with content
+const PARALLAX_RATE = 0.08     // 0 = fixed, 1 = scrolls with content
+const VIGNETTE_SOLID = 0.92    // fraction of inscribed radius fully opaque
+const MAX_ITERATIONS = 6       // hard ceiling on L-system depth
+const MAX_OFFSCREEN_PX = 5120  // cap offscreen dimension (device px)
 
 function GosperCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
 
     // ── Curve parameters ───────────────────────────────────────
-    const iterations = 6
     const stepMultiplier = 1
     const radiusRatio = 0.25
     const lineWidthMultiplier = 0.161
@@ -19,15 +21,11 @@ function GosperCanvas() {
     // ── Reduced motion ─────────────────────────────────────────
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    // ── L-system generation ────────────────────────────────────
-    const lsys = new LSystem({
-        axiom: 'A',
-        productions: {
-            'A': 'A-B--B+A++AA+B-',
-            'B': '+A-BB--B-A++A+B',
-        },
-    })
-    const result = lsys.iterate(iterations)
+    // ── L-system config ────────────────────────────────────────
+    const productions = {
+        'A': 'A-B--B+A++AA+B-',
+        'B': '+A-BB--B-A++A+B',
+    }
     const angle = 60 * (Math.PI / 180)
 
     useEffect(() => {
@@ -37,6 +35,9 @@ function GosperCanvas() {
         if (!ctx) return
 
         let offscreen: HTMLCanvasElement | null = null
+        let logicalSize = 0
+        let cachedN = 0
+        let cachedResult = ''
 
         // ── Bake curve to offscreen texture ────────────────────
         function bakeTexture() {
@@ -54,9 +55,46 @@ function GosperCanvas() {
             const step = rootFontSize * stepMultiplier
             const lineWidth = rootFontSize * lineWidthMultiplier
 
-            // offscreen must cover the visible area at any rotation
-            const diag = Math.ceil(Math.sqrt(w * w + h * h))
-            const size = PARALLAX_RATE > 0 ? Math.ceil(diag * 1.4) : diag
+            // ── Derive canvas size from inscribed-circle constraint ──
+            // The vignette makes coverage a circle. For full parallax,
+            // every viewport corner must stay inside that circle at
+            // maximum scroll. The curve extent caps how large we can go.
+            const diag = Math.sqrt(w * w + h * h)
+            const curveExtent = step * Math.pow(7, MAX_ITERATIONS / 2)
+            let size: number
+
+            if (PARALLAX_RATE > 0) {
+                const maxScroll = Math.max(
+                    document.documentElement.scrollHeight - h, 0
+                )
+                const maxOffset = maxScroll * PARALLAX_RATE
+                const effectiveR = Math.sqrt(
+                    (w / 2) ** 2 + (h / 2 + maxOffset) ** 2
+                )
+                size = Math.ceil(
+                    Math.min(2 * effectiveR / VIGNETTE_SOLID, curveExtent)
+                )
+            } else {
+                size = Math.ceil(diag)
+            }
+            size = Math.max(size, Math.ceil(diag / VIGNETTE_SOLID))
+            logicalSize = size
+
+            // ── Derive iteration count ───────────────────────────
+            const n = Math.max(
+                3,
+                Math.min(
+                    MAX_ITERATIONS,
+                    Math.ceil(2 * Math.log(size / step) / Math.log(7))
+                )
+            )
+
+            if (n !== cachedN) {
+                const lsys = new LSystem({ axiom: 'A', productions })
+                cachedResult = lsys.iterate(n)
+                cachedN = n
+            }
+            const result = cachedResult
 
             // first pass: bounding box with step=1
             let x = 0, y = 0, dir = initialDir
@@ -107,11 +145,12 @@ function GosperCanvas() {
             }
 
             // draw to offscreen canvas
+            const offDpr = Math.min(dpr, MAX_OFFSCREEN_PX / size)
             offscreen = document.createElement('canvas')
-            offscreen.width = size * dpr
-            offscreen.height = size * dpr
+            offscreen.width = Math.ceil(size * offDpr)
+            offscreen.height = Math.ceil(size * offDpr)
             const offCtx = offscreen.getContext('2d')!
-            offCtx.scale(dpr, dpr)
+            offCtx.scale(offDpr, offDpr)
 
             offCtx.beginPath()
             offCtx.moveTo(points[0].x, points[0].y)
@@ -137,6 +176,20 @@ function GosperCanvas() {
             offCtx.lineCap = 'round'
             offCtx.stroke()
 
+            // Radial vignette: fade to transparent so coverage is a circle,
+            // invariant under rotation. No hard square edge to sweep through.
+            const inscribedR = size / 2
+            const solidR = inscribedR * VIGNETTE_SOLID
+            offCtx.globalCompositeOperation = 'destination-in'
+            const grad = offCtx.createRadialGradient(
+                size / 2, size / 2, solidR,
+                size / 2, size / 2, inscribedR,
+            )
+            grad.addColorStop(0, 'rgba(255,255,255,1)')
+            grad.addColorStop(1, 'rgba(255,255,255,0)')
+            offCtx.fillStyle = grad
+            offCtx.fillRect(0, 0, size, size)
+
             performance.mark('bake-end')
             performance.measure('Gosper bake', 'bake-start', 'bake-end')
             lastBakeTime = performance.getEntriesByName('Gosper bake').at(-1)!.duration
@@ -144,17 +197,28 @@ function GosperCanvas() {
 
         // ── Render ─────────────────────────────────────────────
         function render(rotation: number, scrollOffset: number = 0) {
-            if (!offscreen) return
+            if (!offscreen || !logicalSize) return
             const dpr = window.devicePixelRatio || 1
             const rect = canvas!.getBoundingClientRect()
             const w = rect.width
             const h = rect.height
-            const s = offscreen.width / dpr
+            const s = logicalSize
+
+            // Vignette makes coverage a circle of radius effectiveR,
+            // invariant under rotation. Clamp offset so every viewport
+            // corner stays inside that circle.
+            const effectiveR = s * VIGNETTE_SOLID / 2
+            const halfW = w / 2
+            const halfH = h / 2
+            const maxOffset = effectiveR > halfW
+                ? Math.max(Math.sqrt(effectiveR * effectiveR - halfW * halfW) - halfH, 0)
+                : 0
+            const clamped = Math.max(-maxOffset, Math.min(maxOffset, scrollOffset))
 
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
             ctx!.clearRect(0, 0, w, h)
 
-            ctx!.translate(w / 2, h / 2 - scrollOffset)
+            ctx!.translate(w / 2, h / 2 - clamped)
             ctx!.rotate(rotation)
             ctx!.drawImage(offscreen, -s / 2, -s / 2, s, s)
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -199,6 +263,10 @@ function GosperCanvas() {
         })
         observer.observe(canvas)
 
+        // Rebake when content height changes (route navigation)
+        const bodyObserver = new ResizeObserver(debouncedBake)
+        bodyObserver.observe(document.body)
+
         // ── Start ──────────────────────────────────────────────
         if (prefersReducedMotion) {
             render(0)
@@ -209,6 +277,7 @@ function GosperCanvas() {
         return () => {
             cancelAnimationFrame(animationId)
             observer.disconnect()
+            bodyObserver.disconnect()
         }
     }, [])
 
