@@ -10,6 +10,7 @@ type HilbertCanvasProps = {
     mobileScaleBase?: 'width' | 'height'     // override scaleBase on narrow viewports (< 640px)
 }
 
+// ── Gradient bands ──────────────────────────────────────────────
 const GRADIENT_BANDS = [
     { h: 230, s: 40, l: 20, aScale: 0.6,                           // deep indigo — shadow, tension
       pos: (t: number) => 0.95 + 0.04 * Math.sin(t * 0.15),
@@ -29,6 +30,7 @@ const GRADIENT_BANDS = [
       xPos: (t: number) => -0.3 + 0.12 * Math.sin(t * 0.25 + 3.5) },
 ]
 
+// ── Noise texture ───────────────────────────────────────────────
 function generateNoise(): HTMLCanvasElement {
     const size = 128
     const c = document.createElement('canvas')
@@ -50,6 +52,7 @@ function generateNoise(): HTMLCanvasElement {
 const GRADIENT_PACE = 10
 const GRADIENT_PACE_HOVER = 25
 
+// ── Gradient renderer ───────────────────────────────────────────
 function drawGradients(ctx: CanvasRenderingContext2D, w: number, h: number, time: number, alpha: number) {
     // saturation breathes on a slow sine — the whole field intensifies and retreats
     const breathe = 0.85 + 0.15 * Math.sin(time * 0.7)
@@ -151,6 +154,7 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
         let grainAlpha = 0.08
         const noiseCanvas = generateNoise()
 
+        // ── Bake curve tile ────────────────────────────────
         function bakeTile() {
             dpr = window.devicePixelRatio || 1
             grainAlpha = parseFloat(getComputedStyle(canvas!).getPropertyValue('--grain-opacity')) || 0.08
@@ -246,6 +250,7 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             }
         }
 
+        // ── Animation state ─────────────────────────────────
         let scrollOffset = 0
         let scrollVelocity = 0
         let gradientTime = 0
@@ -257,7 +262,7 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
         const card = canvas.closest('.overflow-hidden') ?? canvas
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
-        // hover state via events instead of per-frame :hover polling
+        // ── Hover and visibility ───────────────────────────
         let hovering = false
         function onMouseEnter() { hovering = true }
         function onMouseLeave() { hovering = false }
@@ -279,22 +284,9 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
         )
         visObserver.observe(canvas)
 
-        function animate() {
-            animId = requestAnimationFrame(animate)
-
-            if (!visible || !tile || tileSize === 0 || !scratch || !scratchCtx || !gradBuf || !gradBufCtx || !noiseBuf) return
-
-            const now = performance.now()
-            const dt = now - lastTime
-            lastTime = now
-
-            const prefersReduced = reducedMotion.matches
-            if (!prefersReduced) {
-                const force = hovering ? hoverForce : baseForce
-                scrollVelocity += force * dt
-                scrollVelocity *= Math.exp(-drag * dt)
-            }
-            scrollOffset = (scrollOffset + scrollVelocity * dt) % tileStride
+        // ── Render frame ──────────────────────────────────
+        function renderFrame(dt: number) {
+            if (!tile || tileSize === 0 || !scratch || !scratchCtx || !gradBuf || !gradBufCtx || !noiseBuf) return
 
             const pace = hovering ? GRADIENT_PACE_HOVER : GRADIENT_PACE
             gradientTime += dt * 0.0001 * pace
@@ -351,10 +343,37 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
             ctx!.restore()
         }
 
-        bakeTile()
-        animId = requestAnimationFrame(animate)
+        // ── Animation loop ──────────────────────────────────
+        function animate() {
+            animId = requestAnimationFrame(animate)
+            if (!visible) return
 
-        const observer = new ResizeObserver(() => bakeTile())
+            const now = performance.now()
+            const dt = now - lastTime
+            lastTime = now
+
+            const force = hovering ? hoverForce : baseForce
+            scrollVelocity += force * dt
+            scrollVelocity *= Math.exp(-drag * dt)
+            scrollOffset = (scrollOffset + scrollVelocity * dt) % tileStride
+
+            renderFrame(dt)
+        }
+
+        // ── Init ────────────────────────────────────────────
+        bakeTile()
+
+        if (reducedMotion.matches) {
+            // render once, no animation loop
+            renderFrame(0)
+        } else {
+            animId = requestAnimationFrame(animate)
+        }
+
+        const observer = new ResizeObserver(() => {
+            bakeTile()
+            if (reducedMotion.matches) renderFrame(0)
+        })
         observer.observe(canvas)
 
         return () => {
@@ -366,5 +385,5 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
         }
     }, [])
 
-    return <canvas ref={canvasRef} className={`hilbert ${className ?? ''}`} style={{ touchAction: 'pan-y' }} />
+    return <canvas ref={canvasRef} role='img' aria-label='Animated Hilbert curve' className={`hilbert ${className ?? ''}`} style={{ touchAction: 'pan-y' }} />
 }

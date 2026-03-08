@@ -46,32 +46,22 @@ export default function MandelbrotCanvas({ className, rotation = ROTATION }: Pro
         const ctx = canvas.getContext('2d')
         if (!ctx) return
 
-        const w = canvas.clientWidth
-        const h = canvas.clientHeight
-        if (!w || !h) return
-        canvas.width = w
-        canvas.height = h
-
-        // Derive pixel size from the shorter axis so pixels stay square
-        const pixelSize = Math.max(1, Math.round(1 / RENDER_SCALE))
-        const rw = Math.max(1, Math.ceil(w / pixelSize))
-        const rh = Math.max(1, Math.ceil(h / pixelSize))
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
         const cosR = Math.cos(rotation)
         const sinR = Math.sin(rotation)
+        const pixelSize = Math.max(1, Math.round(1 / RENDER_SCALE))
 
-        // Reusable render buffer
-        const oc = document.createElement('canvas')
-        oc.width = rw
-        oc.height = rh
-        const octx = oc.getContext('2d')!
-        const img = octx.createImageData(rw, rh)
-        const d = img.data
-
-        // Latest computed Mandelbrot frame (RGB floats)
-        const raw = new Float32Array(rw * rh * 3)
-        // EMA accumulator blending toward raw each display frame
-        const accum = new Float32Array(rw * rh * 3)
-        const pixelCount = rw * rh * 3
+        let w = 0
+        let h = 0
+        let rw = 0
+        let rh = 0
+        let oc: HTMLCanvasElement | null = null
+        let octx: CanvasRenderingContext2D | null = null
+        let img: ImageData | null = null
+        let d: Uint8ClampedArray | null = null
+        let raw: Float32Array | null = null
+        let accum: Float32Array | null = null
+        let pixelCount = 0
 
         let radius = RADIUS_START
         let lastCompute = 0
@@ -80,13 +70,40 @@ export default function MandelbrotCanvas({ className, rotation = ROTATION }: Pro
         let prevTime = 0
         let satTime = 0
         let rafId: number
+        let needsInitialCompute = true
+
+        function resize() {
+            w = canvas!.clientWidth
+            h = canvas!.clientHeight
+            if (!w || !h) return
+            canvas!.width = w
+            canvas!.height = h
+
+            rw = Math.max(1, Math.ceil(w / pixelSize))
+            rh = Math.max(1, Math.ceil(h / pixelSize))
+
+            oc = document.createElement('canvas')
+            oc.width = rw
+            oc.height = rh
+            octx = oc.getContext('2d')!
+            img = octx.createImageData(rw, rh)
+            d = img.data
+
+            raw = new Float32Array(rw * rh * 3)
+            accum = new Float32Array(rw * rh * 3)
+            pixelCount = rw * rh * 3
+            needsInitialCompute = true
+        }
 
         // Detect hover on the nearest positioned ancestor (e.g. the hero banner)
         const hoverTarget = canvas.offsetParent as HTMLElement ?? canvas
-        hoverTarget.addEventListener('mouseenter', () => { hovered = true })
-        hoverTarget.addEventListener('mouseleave', () => { hovered = false })
+        function onEnter() { hovered = true }
+        function onLeave() { hovered = false }
+        hoverTarget.addEventListener('mouseenter', onEnter)
+        hoverTarget.addEventListener('mouseleave', onLeave)
 
         function compute() {
+            if (!raw) return
             const step = (radius * 2) / rh
 
             for (let py = 0; py < rh; py++) {
@@ -121,11 +138,18 @@ export default function MandelbrotCanvas({ className, rotation = ROTATION }: Pro
             if (radius > RADIUS_MAX) radius = RADIUS_START
         }
 
-        // Compute first frame immediately so accum has something to blend toward
-        compute()
-        accum.set(raw)
-
         function tick(time: number) {
+            rafId = requestAnimationFrame(tick)
+            if (!raw || !accum || !d || !img || !octx || !oc) return
+            if (reducedMotion.matches) return
+
+            if (needsInitialCompute) {
+                compute()
+                accum.set(raw)
+                needsInitialCompute = false
+                lastCompute = time
+            }
+
             const rawDt = prevTime ? time - prevTime : 16
             prevTime = time
             satTime += rawDt * 0.001
@@ -192,14 +216,21 @@ export default function MandelbrotCanvas({ className, rotation = ROTATION }: Pro
             octx.putImageData(img, 0, 0)
             ctx.imageSmoothingEnabled = false
             ctx.drawImage(oc, 0, 0, w, h)
-
-            rafId = requestAnimationFrame(tick)
         }
 
+        resize()
         rafId = requestAnimationFrame(tick)
 
-        return () => cancelAnimationFrame(rafId)
-    }, [])
+        const resizeObs = new ResizeObserver(() => resize())
+        resizeObs.observe(canvas)
 
-    return <canvas ref={canvasRef} className={className} style={{ touchAction: 'pan-y' }} />
+        return () => {
+            cancelAnimationFrame(rafId)
+            resizeObs.disconnect()
+            hoverTarget.removeEventListener('mouseenter', onEnter)
+            hoverTarget.removeEventListener('mouseleave', onLeave)
+        }
+    }, [rotation])
+
+    return <canvas ref={canvasRef} role='img' aria-label='Animated Mandelbrot fractal' className={className} style={{ touchAction: 'pan-y' }} />
 }

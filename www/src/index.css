@@ -93,6 +93,12 @@ html {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .slide-next, .slide-prev {
+        animation: none;
+    }
+}
+
 /* Hilbert canvas */
 canvas.hilbert { --grain-opacity: 0.1; }
 
@@ -122,6 +128,7 @@ canvas.hilbert { --grain-opacity: 0.1; }
 }
 
 .prose a {
+    @apply transition;
     color: var(--color-accent-light);
     text-decoration: underline;
     text-underline-offset: 2px;

@@ -10,7 +10,7 @@ type WaveConfig = {
 
 type FlowFn = (x: number, y: number, t: number) => [number, number]
 
-// --- Configurable constants ---
+// ── Configurable constants ──────────────────────────────────────
 
 const PARTICLE_COUNT = 100
 const PARTICLE_LIFESPAN = 3200     // ms before respawn
@@ -27,7 +27,7 @@ const CONTOUR_ALPHA = 0.77         // peak opacity — particle contours
 const CONTOUR_WIDTH = 4.0          // line width in CSS px
 const CONTOUR_FADE = (cycle: number) => Math.pow(Math.sin(cycle * Math.PI), 0.4)  // cycle (0–1) → opacity multiplier
 
-// --- Layer 2: density-driven hue shift ---
+// ── Layer 2: density-driven hue shift ───────────────────────────
 const HUE_SHIFT = 0                // degrees — no hue rotation, just intensity shift
 const HUE_SHIFT_SAT_BOOST = 5.0   // saturation multiplier for shifted layer (>1 = more vivid)
 const HUE_SHIFT_LIT_DROP = 0.8    // lightness multiplier for shifted layer (<1 = darker)
@@ -35,7 +35,7 @@ const HUE_SHIFT_STRENGTH = 1      // max alpha of shifted layer in empty areas
 const INVERSION_SENSITIVITY = 0.8 
  // how quickly density suppresses the shift
 
-// --- Highlight ray ---
+// ── Highlight ray ───────────────────────────────────────────────
 const RAY_ALPHA = 0.09              // peak opacity of the ray
 const RAY_HSL: [number, number, number] = [200, 30, 92]  // near-white with a cool tint
 const RAY_WIDTH = 0.25              // width of the ray as a fraction of the canvas diagonal
@@ -43,7 +43,7 @@ const RAY_SOFTNESS = 0.4            // 0 = hard edge, 1 = fully feathered
 const RAY_SLOPE = -1.5                // m in y = mx + c (slope of the ray's axis, in canvas space where y points down)
 const RAY_INTERCEPT = 1.3           // c — y-intercept as a fraction of canvas height (0 = top, 1 = bottom)
 
-// --- Density glow ---
+// ── Density glow ────────────────────────────────────────────────
 const GLOW_BRIGHTNESS = 0.04       // maps density to glow intensity
 const GLOW_RGB: [number, number, number] = [100, 240, 220]   // luminous teal
 // Transfer function: density (0-1) → glow intensity (0-1)
@@ -52,7 +52,7 @@ const glowTransfer = (x: number): number => {
     return 1 / (1 + Math.exp(-12 * (x - 0.4)))
 }
 
-// --- Colour system ---
+// ── Colour system ───────────────────────────────────────────────
 
 const GRADIENT_ALPHA = 1        // global alpha for gradient fills
 const BAND_WARP_AMP = 2        // max warp displacement in CSS px
@@ -62,7 +62,7 @@ const GRADIENT_WARP_SPEED = 0.5    // warp phase accumulation rate from flow
 const NOISE_AMP = 2               // max noise displacement in CSS px
 const NOISE_SCROLL_SPEED = 0.8     // upward scroll rate
 
-// --- Band vertical scrolling ---
+// ── Band vertical scrolling ─────────────────────────────────────
 const BAND_SCROLL_SPEED = 0.72     // global multiplier for upward band drift (fraction of canvas height per sim-second)
 const BAND_SCROLL_MARGIN = 0.1     // extra margin beyond band width before wrap (avoids popping)
 
@@ -622,13 +622,13 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
                 }
             }
 
-            // === LAYER 1: Gradient Atmosphere ===
+            // ── Layer 1: Gradient atmosphere ─────────────────────
 
             ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
             ctx!.clearRect(0, 0, w, h)
             drawGradients(ctx!, w, h, GRADIENT_ALPHA, time, driftAccum, 0, 1, 1, gradientHeight)
 
-            // === LAYER 1.5: Density glow ===
+            // ── Layer 1.5: Density glow ──────────────────────────
             // Soft diffuse highlight where particles concentrate
             const glowData = glowImgData!.data
             const [gr, gg, gb] = GLOW_RGB
@@ -649,7 +649,7 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
             ctx!.drawImage(glowBuf!, 0, 0, fieldW, fieldH, 0, 0, w, h)
             ctx!.restore()
 
-            // === LAYER 2: Density-inverted hue shift ===
+            // ── Layer 2: Density-inverted hue shift ──────────────
             // Where particles are absent, the gradient shifts toward its complement.
             // Where particles concentrate, the normal gradient shows through.
 
@@ -684,7 +684,7 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
             // Composite shifted layer onto main canvas
             ctx!.drawImage(shiftBuf!, 0, 0, shiftBuf!.width, shiftBuf!.height, 0, 0, w, h)
 
-            // === CONTOUR LINES (bg-border colour) ===
+            // ── Contour lines ────────────────────────────────────
             {
                 ctx!.lineWidth = CONTOUR_WIDTH
                 ctx!.lineCap = 'round'
@@ -700,7 +700,7 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
                 }
             }
 
-            // === LAYER 3: Highlight ray ===
+            // ── Layer 3: Highlight ray ───────────────────────────
             // Diffuse band of light along y = mx + c, gradient perpendicular to the line
             {
                 const [rh, rs, rl] = RAY_HSL
@@ -754,5 +754,5 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
         }
     }, [])
 
-    return <canvas ref={canvasRef} className={className ?? ''} style={{ touchAction: 'pan-y' }} />
+    return <canvas ref={canvasRef} role='img' aria-label='Animated caustic light pattern' className={className ?? ''} style={{ touchAction: 'pan-y' }} />
 }
