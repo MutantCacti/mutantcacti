@@ -6,30 +6,7 @@ import TimeAge from '../components/TimeAge'
 import HilbertCanvas from '../components/HilbertCanvas'
 import CausticCanvas from '../components/CausticCanvas'
 import MandelbrotCanvas from '../components/MandelbrotCanvas'
-
-function PostList({ categorySlug, filteredPosts }: { categorySlug: string, filteredPosts: typeof posts }) {
-    if (filteredPosts.length === 0) {
-        return <p className='text-text-muted text-center'>No posts yet.</p>
-    }
-
-    return (
-        <div className='flex flex-col gap-4 w-full'>
-            {filteredPosts.map(post => (
-                <Link key={post.slug} to={`/blog/${categorySlug}/${post.slug}`} state={{ from: `/blog/${categorySlug}`, label: getCategoryBySlug(categorySlug)?.label ?? 'Blog' }} draggable={false}>
-                    <Card className='w-full'>
-                        <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-2'>
-                            <h2 className='text-accent-light text-xl'>{post.title}</h2>
-                            <TimeAge date={post.date} className='text-text-muted text-sm' />
-                        </div>
-                        {post.description && (
-                            <p className='text-text'>{post.description}</p>
-                        )}
-                    </Card>
-                </Link>
-            ))}
-        </div>
-    )
-}
+import PostList from '../components/PostList'
 
 export default function Blog() {
     const { category: categorySlug } = useParams<{ category: string }>()
@@ -47,6 +24,9 @@ export default function Blog() {
         const filteredPosts = getPostsByTag(category.tag)
         return (
             <>
+                <Link to='/blog' className='text-text-muted hover:text-accent-light transition-colors text-sm mb-3 inline-block self-start' draggable={false}>
+                    &larr; Blog
+                </Link>
                 <div className='w-full mb-6 bg-bg border border-border rounded-lg overflow-hidden relative'>
                     {category.slug === 'essays'
                         ? <HilbertCanvas className='absolute inset-0 w-full h-full' rotation={90} iterations={6} strokeMultiplier={0.15} scaleBase='width' mobileScaleBase='width' />
@@ -99,7 +79,7 @@ export default function Blog() {
                                 <div className='px-4 pb-4 -mt-4 relative'>
                                     <h2 className='text-accent-light text-xl mb-2'>{cat.label}</h2>
                                     <p className='text-text-muted text-xs'>
-                                        {getPostsByTag(cat.tag).length} {getPostsByTag(cat.tag).length === 1 ? 'post' : 'posts'}
+                                        {(() => { const n = getPostsByTag(cat.tag).length; return `${n} ${n === 1 ? 'post' : 'posts'}` })()}
                                     </p>
                                 </div>
                             </div>
@@ -110,19 +90,19 @@ export default function Blog() {
             {recentPosts.length > 0 && (
                 <section className='w-full mt-8'>
                     <h2 className='text-text text-xl mb-4'>Recent Posts</h2>
-                    <div className='flex flex-col gap-4'>
+                    <div className='flex flex-col gap-5'>
                         {recentPosts.map(post => {
                             const cat = categories.find(c => post.tags.includes(c.tag))
                             return (
-                                <Link key={post.slug} to={`/blog/${cat?.slug ?? 'essays'}/${post.slug}`} state={{ from: '/blog', label: 'Blog' }} draggable={false}>
+                                <Link key={post.slug} to={`/blog/${cat?.slug ?? 'essays'}/${post.slug}`} state={{ from: '/blog', label: 'Blog' }} draggable={false} className='group'>
                                     <Card className='w-full'>
-                                        <div className='flex flex-col sm:flex-row sm:items-center gap-2 mb-2'>
-                                            <h3 className='text-accent-light text-lg'>{post.title}</h3>
+                                        <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+                                            <h3 className='text-accent-light text-lg group-hover:underline decoration-accent-light underline-offset-2'>{post.title}</h3>
                                             <TimeAge date={post.date} className='text-text-muted text-sm' />
                                             {cat && <span className='text-text-muted text-xs bg-border px-2 py-0.5 rounded'>{cat.label}</span>}
                                         </div>
                                         {post.description && (
-                                            <p className='text-text'>{post.description}</p>
+                                            <p className='text-text mt-2'>{post.description}</p>
                                         )}
                                     </Card>
                                 </Link>

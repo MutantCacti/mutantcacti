@@ -4,6 +4,7 @@ export type PostMeta = {
     slug: string
     tags: string[]
     description?: string
+    credit?: string
 }
 
 type MDXComponent = React.ComponentType<{ components?: Record<string, React.ComponentType> }>
@@ -20,15 +21,16 @@ export const posts: (PostMeta & { Component: MDXComponent })[] = Object.entries(
         const slug = path.split('/').pop()!.replace(/\.mdx$/, '')
         const fm = mod.frontmatter ?? {}
         return {
-            title: (fm.title as string) ?? slug,
-            date: (fm.date as string) ?? '',
+            title: typeof fm.title === 'string' ? fm.title : slug,
+            date: typeof fm.date === 'string' ? fm.date : '',
             slug,
-            tags: (fm.tags as string[]) ?? [],
-            description: fm.description as string | undefined,
+            tags: Array.isArray(fm.tags) ? fm.tags as string[] : [],
+            description: typeof fm.description === 'string' ? fm.description : undefined,
+            credit: typeof fm.credit === 'string' ? fm.credit : undefined,
             Component: mod.default,
         }
     })
-    .sort((a, b) => (b.date > a.date ? 1 : -1))
+    .sort((a, b) => (b.date > a.date ? 1 : -1)) // dates must be YYYY-MM-DD for string sort
 
 export function getPostBySlug(slug: string) {
     return posts.find(p => p.slug === slug)
