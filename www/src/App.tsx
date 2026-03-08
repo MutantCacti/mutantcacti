@@ -1,17 +1,17 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import LSystemCanvas from "./components/LSystemCanvas"
-import Layout from "./Layout"
-import Profile from "./pages/Profile"
-import Projects from "./pages/Projects"
-import Blog from "./pages/Blog"
-import BlogPost from "./pages/BlogPost"
-import NotFound from "./pages/NotFound"
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import GosperCanvas from './components/GosperCanvas'
+import Layout from './Layout'
+import Profile from './pages/Profile'
+import Projects from './pages/Projects'
+import Blog from './pages/Blog'
+import BlogPost from './pages/BlogPost'
+import NotFound from './pages/NotFound'
 
 function App() {
     return (
-        <div className="relative min-h-screen bg-bg text-text">
-            <LSystemCanvas />
-            <div className="relative min-h-screen">
+        <div className='relative min-h-screen bg-bg text-text'>
+            <GosperCanvas />
+            <div className='relative min-h-screen'>
                 <BrowserRouter>
                     <Routes>
                         <Route element={<Layout />}>

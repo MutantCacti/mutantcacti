@@ -1,29 +1,25 @@
 import { useRef, useEffect } from 'react'
 import LSystem from 'lindenmayer'
 
+// ── Config ─────────────────────────────────────────────────────
 const PARALLAX_RATE = 0.08 // 0 = fixed, 1 = scrolls with content
-let accentMode = false
-;(window as any).toggleGosper = () => {
-    accentMode = !accentMode
-    ;(window as any).__gosperRebake?.()
-    console.log('Gosper:', accentMode ? 'accent' : 'surface')
-}
 
-function LSystemCanvas() {
+function GosperCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+
+    // ── Curve parameters ───────────────────────────────────────
     const iterations = 6
     const stepMultiplier = 1
     const radiusRatio = 0.25
     const lineWidthMultiplier = 0.161
-    const accentWidthMultiplier = 1.618
     const baseSpeed = 0.000003
     const initialDir = 64 * Math.random() * (Math.PI / 180)
     let lastBakeTime = 0
 
-    // reduced motion
+    // ── Reduced motion ─────────────────────────────────────────
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    // generate the L-system string once
+    // ── L-system generation ────────────────────────────────────
     const lsys = new LSystem({
         axiom: 'A',
         productions: {
@@ -42,6 +38,7 @@ function LSystemCanvas() {
 
         let offscreen: HTMLCanvasElement | null = null
 
+        // ── Bake curve to offscreen texture ────────────────────
         function bakeTexture() {
             performance.mark('bake-start')
             const dpr = window.devicePixelRatio || 1
@@ -49,22 +46,19 @@ function LSystemCanvas() {
             const w = rect.width
             const h = rect.height
 
-            // size the visible canvas
             canvas!.width = w * dpr
             canvas!.height = h * dpr
             ctx!.scale(dpr, dpr)
 
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
             const step = rootFontSize * stepMultiplier
-            const lineWidth = rootFontSize * lineWidthMultiplier * (accentMode ? accentWidthMultiplier : 1.0)
+            const lineWidth = rootFontSize * lineWidthMultiplier
 
-            // offscreen canvas needs to cover the visible area at any rotation
-            // diagonal = the minimum size that guarantees full coverage
-            // extra buffer for parallax scroll offset
+            // offscreen must cover the visible area at any rotation
             const diag = Math.ceil(Math.sqrt(w * w + h * h))
             const size = PARALLAX_RATE > 0 ? Math.ceil(diag * 1.4) : diag
 
-            // first pass with step=1 to get raw bounding box
+            // first pass: bounding box with step=1
             let x = 0, y = 0, dir = initialDir
             let minX = 0, minY = 0, maxX = 0, maxY = 0
 
@@ -86,7 +80,6 @@ function LSystemCanvas() {
             const rawW = maxX - minX
             const rawH = maxY - minY
 
-            // center curve on the offscreen canvas
             const offsetX = size / 2 - (minX + rawW / 2) * step
             const offsetY = size / 2 - (minY + rawH / 2) * step
 
@@ -138,18 +131,18 @@ function LSystemCanvas() {
             offCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y)
 
             const styles = getComputedStyle(canvas!)
-            offCtx.strokeStyle = styles.getPropertyValue(accentMode ? '--color-accent-light' : '--color-surface').trim()
+            offCtx.strokeStyle = styles.getPropertyValue('--color-surface').trim()
             offCtx.lineWidth = lineWidth
             offCtx.lineJoin = 'round'
             offCtx.lineCap = 'round'
             offCtx.stroke()
 
             performance.mark('bake-end')
-            performance.measure('L-system bake', 'bake-start', 'bake-end')
-            lastBakeTime = performance.getEntriesByName('L-system bake').at(-1)!.duration
-            console.log('Gosper curve: bake in ' + lastBakeTime + 'ms')
+            performance.measure('Gosper bake', 'bake-start', 'bake-end')
+            lastBakeTime = performance.getEntriesByName('Gosper bake').at(-1)!.duration
         }
 
+        // ── Render ─────────────────────────────────────────────
         function render(rotation: number, scrollOffset: number = 0) {
             if (!offscreen) return
             const dpr = window.devicePixelRatio || 1
@@ -158,23 +151,19 @@ function LSystemCanvas() {
             const h = rect.height
             const s = offscreen.width / dpr
 
-            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0) // reset transform
+            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
             ctx!.clearRect(0, 0, w, h)
 
-            // translate to center with parallax offset, rotate, draw offscreen centered
             ctx!.translate(w / 2, h / 2 - scrollOffset)
             ctx!.rotate(rotation)
             ctx!.drawImage(offscreen, -s / 2, -s / 2, s, s)
-            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0) // reset for next frame
+            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
         }
 
-        // initial bake
+        // ── Init ───────────────────────────────────────────────
         bakeTexture()
 
-        // dev toggle: call toggleGosper() in console
-        ;(window as any).__gosperRebake = bakeTexture
-
-        // animation
+        // ── Animation loop ─────────────────────────────────────
         let animationId: number
         let currentDir = 0
         let lastTime = 0
@@ -186,6 +175,7 @@ function LSystemCanvas() {
             animationId = requestAnimationFrame(animate)
         }
 
+        // ── Resize handling ────────────────────────────────────
         function debounce(fn: () => void, ms: number) {
             let timeout: number
             return () => {
@@ -201,18 +191,15 @@ function LSystemCanvas() {
 
         const observer = new ResizeObserver(() => {
             if (lastBakeTime < 10) {
-                // fast enough, rebake immediately
                 bakeTexture()
                 if (prefersReducedMotion) render(0)
             } else {
-                // slow, debounce
                 debouncedBake()
             }
         })
         observer.observe(canvas)
 
-        // reduced-motion: render once, no animation, no parallax
-        let onScroll: (() => void) | null = null
+        // ── Start ──────────────────────────────────────────────
         if (prefersReducedMotion) {
             render(0)
         } else {
@@ -222,17 +209,18 @@ function LSystemCanvas() {
         return () => {
             cancelAnimationFrame(animationId)
             observer.disconnect()
-            if (onScroll) window.removeEventListener('scroll', onScroll)
         }
     }, [])
 
     return (
         <canvas
             ref={canvasRef}
+            role='img'
+            aria-label='Animated Gosper curve background'
             id='gosper-bg'
-            className="fixed inset-0 w-full h-full"
+            className='fixed inset-0 w-full h-full'
         />
     )
 }
 
-export default LSystemCanvas
+export default GosperCanvas
