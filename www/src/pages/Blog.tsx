@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, Navigate } from 'react-router-dom'
 import { posts, categories, getCategoryBySlug, getPostsByTag } from '../data/posts'
 import Card from '../components/Card'
 import Tiltable from '../components/Tiltable'
@@ -13,11 +13,7 @@ export default function Blog() {
     const category = categorySlug ? getCategoryBySlug(categorySlug) : undefined
 
     if (categorySlug && !category) {
-        return (
-            <div className='text-center'>
-                <h1 className='text-accent-light text-2xl mb-4'>Category not found</h1>
-            </div>
-        )
+        return <Navigate to='/404' replace />
     }
 
     if (category) {
@@ -25,7 +21,7 @@ export default function Blog() {
         return (
             <>
                 <Link to='/blog' className='text-text-muted hover:text-accent-light transition-colors text-sm mb-3 inline-block self-start' draggable={false}>
-                    &larr; Blog
+                    <span aria-hidden='true'>&larr; </span>Blog
                 </Link>
                 <div className='w-full mb-6 bg-bg border border-border rounded-lg overflow-hidden relative'>
                     {category.slug === 'essays'
@@ -36,7 +32,7 @@ export default function Blog() {
                         ? <MandelbrotCanvas className='absolute inset-0 w-full h-full' rotation={-Math.PI}/>
                         : <div className='absolute inset-0 bg-surface' />
                     }
-                    <div className='absolute inset-0' style={{ background: 'radial-gradient(ellipse 90% 120% at 0% 54%, var(--color-bg) 30%, transparent 100%)' }} />
+                    <div className='absolute inset-0' style={{ background: 'radial-gradient(ellipse 120% 150% at 0% 50%, var(--color-bg) 25%, color-mix(in srgb, var(--color-bg) 85%, transparent) 38%, color-mix(in srgb, var(--color-bg) 55%, transparent) 48%, color-mix(in srgb, var(--color-bg) 25%, transparent) 58%, color-mix(in srgb, var(--color-bg) 8%, transparent) 68%, color-mix(in srgb, var(--color-bg) 2%, transparent) 78%, transparent 88%)' }} />
                     <div className='relative px-6 py-5'>
                         <h1 className='text-text text-3xl'>{category.label}</h1>
                     </div>
@@ -51,14 +47,14 @@ export default function Blog() {
     return (
         <>
             <h1 className='sr-only'>Blog</h1>
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 w-full'>
+            <div className='grid grid-cols-3 gap-4 w-full'>
                 {categories.map(cat => (
                     <Link key={cat.slug} to={`/blog/${cat.slug}`} className='rounded-lg' draggable={false}>
                         <Tiltable className='h-full'>
                             <div className='bg-bg border border-border rounded-lg overflow-hidden h-full'>
-                                <div className='relative h-40 sm:will-change-transform' style={{ clipPath: 'inset(0 round 0 0 15% 15%)' }}>
+                                <div className='relative h-20 sm:h-40 sm:will-change-transform' style={{ clipPath: 'inset(0 round 0 0 15% 15%)' }}>
                                     {cat.slug === 'essays'
-                                        ? <HilbertCanvas iterations={4} strokeMultiplier={0.15} className='absolute inset-0 w-full h-full' mobileScaleBase='height' />
+                                        ? <HilbertCanvas iterations={4} strokeMultiplier={0.15} className='absolute inset-0 w-full h-full' mobileScaleBase='width' />
                                         : cat.slug === 'poetry'
                                         ? <CausticCanvas className='absolute inset-0 w-full h-full' />
                                         : cat.slug === 'music'
@@ -89,7 +85,7 @@ export default function Blog() {
                         {recentPosts.map(post => {
                             const cat = categories.find(c => post.tags.includes(c.tag))
                             return (
-                                <Link key={post.slug} to={`/blog/${cat?.slug ?? 'essays'}/${post.slug}`} state={{ from: '/blog', label: 'Blog' }} draggable={false} className='group'>
+                                <Link key={post.slug} to={`/blog/${cat?.slug ?? 'essays'}/${post.slug}`} state={{ from: '/blog', label: 'Blog' }} draggable={false} className='group rounded-lg'>
                                     <Card className='w-full'>
                                         <h3 className='text-accent-light text-lg group-hover:underline decoration-accent-light underline-offset-2'>{post.title}</h3>
                                         <div className='flex items-center gap-2 mt-1'>

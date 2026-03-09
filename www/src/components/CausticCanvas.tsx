@@ -754,5 +754,5 @@ export default function CausticCanvas({ className, flow = DEFAULT_FLOW, waves = 
         }
     }, [])
 
-    return <canvas ref={canvasRef} role='img' aria-label='Animated caustic light pattern' className={className ?? ''} style={{ touchAction: 'pan-y' }} />
+    return <canvas ref={canvasRef} aria-hidden='true' className={className ?? ''} style={{ touchAction: 'pan-y' }} />
 }

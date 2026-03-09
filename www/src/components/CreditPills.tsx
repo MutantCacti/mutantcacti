@@ -3,12 +3,12 @@ export default function CreditPills({ credit, className }: { credit: string; cla
     if (names.length === 0) return null
 
     return (
-        <div className={`flex flex-wrap gap-2${className ? ` ${className}` : ''}`}>
+        <ul className={`flex flex-wrap gap-2${className ? ` ${className}` : ''}`}>
             {names.map(name => (
-                <span key={name} className='bg-accent-dark/10 hover:bg-accent-light/10 transition delay-75 duration-100 ease-in backdrop-blur-sm text-xs px-2 py-1 rounded-full text-accent-light whitespace-nowrap'>
+                <li key={name} className='bg-accent-dark/10 hover:bg-accent-light/10 transition delay-75 duration-100 ease-in backdrop-blur-sm text-xs px-2 py-1 rounded-full text-accent-light whitespace-nowrap'>
                     {name}
-                </span>
+                </li>
             ))}
-        </div>
+        </ul>
     )
 }

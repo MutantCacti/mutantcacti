@@ -385,5 +385,5 @@ export default function HilbertCanvas({ className, rotation = 0, iterations = 6,
         }
     }, [])
 
-    return <canvas ref={canvasRef} role='img' aria-label='Animated Hilbert curve' className={`hilbert ${className ?? ''}`} style={{ touchAction: 'pan-y' }} />
+    return <canvas ref={canvasRef} aria-hidden='true' className={`hilbert ${className ?? ''}`} style={{ touchAction: 'pan-y' }} />
 }

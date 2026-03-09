@@ -284,8 +284,7 @@ function GosperCanvas() {
     return (
         <canvas
             ref={canvasRef}
-            role='img'
-            aria-label='Animated Gosper curve background'
+            aria-hidden='true'
             id='gosper-bg'
             className='fixed inset-0 w-full h-full'
         />

@@ -1,4 +1,4 @@
-import { useParams, useLocation, Link } from 'react-router-dom'
+import { useParams, useLocation, Link, Navigate } from 'react-router-dom'
 import { getPostBySlug, getCategoryBySlug } from '../data/posts'
 import { mdxComponents } from '../components/mdx'
 import Card from '../components/Card'
@@ -14,11 +14,7 @@ export default function BlogPost() {
     const backLabel = (typeof navState?.label === 'string' ? navState.label : null) ?? getCategoryBySlug(categorySlug ?? '')?.label ?? 'Blog'
 
     if (!post) {
-        return (
-            <div className='text-center'>
-                <h1 className='text-accent-light text-2xl mb-4'>Post not found</h1>
-            </div>
-        )
+        return <Navigate to='/404' replace />
     }
 
     const { Component } = post
@@ -26,19 +22,21 @@ export default function BlogPost() {
     return (
         <article className='w-full'>
             <Link to={backTo} className='text-text-muted hover:text-accent-light transition-colors text-sm mb-3 inline-block' draggable={false}>
-                &larr; {backLabel}
+                <span aria-hidden='true'>&larr; </span>{backLabel}
             </Link>
             <Card className='p-10'>
                 <header className='flex flex-col sm:flex-row gap-3 items-center my-3'>
                     <h1 className='text-accent text-3xl mr-auto'>{post.title}</h1>
-                    <span className='flex gap-3 mr-auto sm:mr-0'>
+                    <div className='flex gap-3 mr-auto sm:mr-0 items-center'>
                         <time dateTime={post.date}>{post.date}</time>
-                        {post.tags.map(tag => (
-                            <span key={tag} className='bg-border px-2 py-0.5 rounded text-xs text-text'>
-                                {tag}
-                            </span>
-                        ))}
-                    </span>
+                        <ul className='flex gap-3'>
+                            {post.tags.map(tag => (
+                                <li key={tag} className='bg-border px-2 py-0.5 rounded text-xs text-text'>
+                                    {tag}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </header>
                 {post.credit && <CreditPills credit={post.credit} />}
                 <div className='mb-8'/>

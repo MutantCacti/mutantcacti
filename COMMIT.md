@@ -1,1 +1,0 @@
-Replace 9999px box-shadow mask with clip-path on blog tiltable cards

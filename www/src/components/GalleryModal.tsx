@@ -21,20 +21,29 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
     const prevFocus = useRef<Element | null>(null)
 
     const currentItem = media[index]
+    const closeRef = useRef<HTMLButtonElement>(null)
+    const [announced, setAnnounced] = useState(false)
 
-    // Focus modal on mount, restore focus on unmount
+    // Focus close button on mount, restore focus on unmount
     useEffect(() => {
         prevFocus.current = document.activeElement
-        modalRef.current?.focus()
+        closeRef.current?.focus()
+        const raf = requestAnimationFrame(() => setAnnounced(true))
         return () => {
+            cancelAnimationFrame(raf)
             if (prevFocus.current instanceof HTMLElement) prevFocus.current.focus()
         }
     }, [])
 
-    // Lock body scroll
+    // Lock body scroll and hide background from screen readers
     useEffect(() => {
         document.body.style.overflow = 'hidden'
-        return () => { document.body.style.overflow = '' }
+        const root = document.getElementById('root')
+        if (root) root.setAttribute('aria-hidden', 'true')
+        return () => {
+            document.body.style.overflow = ''
+            if (root) root.removeAttribute('aria-hidden')
+        }
     }, [])
 
     // Scroll strip to center a given thumbnail
@@ -62,6 +71,15 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
         scrollStripToIndex(index)
     }, [index, scrollStripToIndex])
 
+    // Global Escape to close
+    useEffect(() => {
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') onClose()
+        }
+        window.addEventListener('keydown', onKeyDown)
+        return () => window.removeEventListener('keydown', onKeyDown)
+    }, [onClose])
+
     // Global wheel navigation
     useEffect(() => {
         function onWheel(e: WheelEvent) {
@@ -87,23 +105,16 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             slideDir.current = -1
             setIndex(i => (i - 1 + media.length) % media.length)
         } else if (e.key === 'Tab') {
-            const focusable = modalRef.current?.querySelectorAll<HTMLElement>('button')
-            if (!focusable || focusable.length === 0) {
+            const focusable = modalRef.current?.querySelectorAll<HTMLElement>('[tabindex="0"], button')
+            if (!focusable || focusable.length === 0) return
+            const list = Array.from(focusable)
+            const current = list.indexOf(document.activeElement as HTMLElement)
+            if (e.shiftKey) {
                 e.preventDefault()
-                return
-            }
-            const first = focusable[0]
-            const last = focusable[focusable.length - 1]
-            const isOnChild = document.activeElement instanceof HTMLElement && Array.from(focusable).includes(document.activeElement)
-            if (!isOnChild) {
+                list[current <= 0 ? list.length - 1 : current - 1].focus()
+            } else {
                 e.preventDefault()
-                ;(e.shiftKey ? last : first).focus()
-            } else if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault()
-                last.focus()
-            } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault()
-                first.focus()
+                list[current >= list.length - 1 ? 0 : current + 1].focus()
             }
         }
     }
@@ -163,7 +174,7 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             ref={modalRef}
             role='dialog'
             aria-modal='true'
-            aria-label={`${title} gallery`}
+            aria-label={`${title} gallery, ${media.length} items`}
             tabIndex={-1}
             className='fixed inset-0 z-50 flex flex-col sm:flex-row items-center justify-center gap-4 bg-black/80 p-4 sm:p-8 outline-none'
             onClick={onClose}
@@ -171,16 +182,25 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
+            <div aria-live='polite' className='sr-only'>
+                {announced ? `${title} gallery, ${media.length} items` : ''}
+            </div>
             <button
+                ref={closeRef}
                 onClick={e => { e.stopPropagation(); onClose() }}
                 aria-label='Close gallery'
                 className='absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-bg/50 hover:bg-bg/70 text-white transition cursor-pointer'
             >
-                <svg viewBox='0 0 24 24' className='w-5 h-5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'>
+                <svg viewBox='0 0 24 24' className='w-5 h-5' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' aria-hidden='true'>
                     <path d='M18 6L6 18M6 6l12 12' />
                 </svg>
             </button>
-            <div className='flex flex-col items-center gap-2 w-full sm:flex-1 sm:min-w-0 sm:max-w-[70vw] sm:h-[80vh]'>
+            <div className='sr-only'>
+                {media.map((item, i) => (
+                    <p key={i}>{`Item ${i + 1} of ${media.length}. ${item.alt}`}</p>
+                ))}
+            </div>
+            <div className='flex flex-col items-center gap-2 w-full sm:flex-1 sm:min-w-0 sm:max-w-[70vw] sm:h-[80vh]' aria-hidden='true'>
                 <div
                     className='relative flex items-center justify-center min-h-0 flex-1'
                 >
@@ -248,6 +268,8 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                     {/* Desktop: vertical sidebar */}
                     <div
                         ref={desktopStripRef}
+                        aria-hidden='true'
+                        inert={'true' as any}
                         className='hidden sm:block h-[80vh] overflow-y-auto no-scrollbar relative'
                         style={{ maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)' }}
                     >
@@ -255,10 +277,11 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                             {media.map((item, i) => (
                                 <button
                                     key={i}
+                                    tabIndex={-1}
                                     onClick={e => { e.stopPropagation(); slideDir.current = i > index ? 1 : -1; setIndex(i) }}
                                     aria-label={item.alt}
                                     aria-current={i === index ? 'true' : undefined}
-                                    className={`w-24 h-[60px] shrink-0 rounded overflow-hidden transition ${i === index ? 'ring-2 ring-highlight' : ''}`}
+                                    className={`w-24 h-[60px] shrink-0 rounded overflow-hidden transition outline-offset-2 ${i === index ? 'ring-2 ring-highlight' : ''}`}
                                 >
                                     {renderThumbnail(item)}
                                 </button>
@@ -268,6 +291,8 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                     {/* Mobile: horizontal strip */}
                     <div
                         ref={mobileStripRef}
+                        aria-hidden='true'
+                        inert={'true' as any}
                         className='sm:hidden w-full overflow-x-auto no-scrollbar'
                         style={{ maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)' }}
                     >
@@ -275,10 +300,11 @@ export default function GalleryModal({ title, media, initialIndex, onClose }: Ga
                             {media.map((item, i) => (
                                 <button
                                     key={i}
+                                    tabIndex={-1}
                                     onClick={e => { e.stopPropagation(); slideDir.current = i > index ? 1 : -1; setIndex(i) }}
                                     aria-label={item.alt}
                                     aria-current={i === index ? 'true' : undefined}
-                                    className={`w-16 h-10 shrink-0 rounded overflow-hidden transition ${i === index ? 'ring-2 ring-highlight' : ''}`}
+                                    className={`w-16 h-10 shrink-0 rounded overflow-hidden transition outline-offset-2 ${i === index ? 'ring-2 ring-highlight' : ''}`}
                                 >
                                     {renderThumbnail(item)}
                                 </button>

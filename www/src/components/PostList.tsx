@@ -13,7 +13,7 @@ export default function PostList({ categorySlug, filteredPosts }: { categorySlug
     return (
         <div className='flex flex-col gap-5 w-full'>
             {filteredPosts.map(post => (
-                <Link key={post.slug} to={`/blog/${categorySlug}/${post.slug}`} state={{ from: `/blog/${categorySlug}`, label: getCategoryBySlug(categorySlug)?.label ?? 'Blog' }} draggable={false} className='group'>
+                <Link key={post.slug} to={`/blog/${categorySlug}/${post.slug}`} state={{ from: `/blog/${categorySlug}`, label: getCategoryBySlug(categorySlug)?.label ?? 'Blog' }} draggable={false} className='group rounded-lg'>
                     <Card className='w-full'>
                         <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
                             <h2 className='text-accent-light text-xl group-hover:underline decoration-accent-light underline-offset-2'>{post.title}</h2>

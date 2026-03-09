@@ -232,5 +232,5 @@ export default function MandelbrotCanvas({ className, rotation = ROTATION }: Pro
         }
     }, [rotation])
 
-    return <canvas ref={canvasRef} role='img' aria-label='Animated Mandelbrot fractal' className={className} style={{ touchAction: 'pan-y' }} />
+    return <canvas ref={canvasRef} aria-hidden='true' className={className} style={{ touchAction: 'pan-y' }} />
 }

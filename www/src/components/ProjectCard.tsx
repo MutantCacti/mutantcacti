@@ -23,9 +23,38 @@ export default function ProjectCard({ title, year, description, tags, images, vi
 
     return (
         <Card className='w-full flex flex-col sm:flex-row gap-4'>
+            <div className='flex-1 flex flex-col gap-2 sm:order-2'>
+                <div className='flex items-center gap-3 flex-wrap'>
+                    {repoUrl ? (
+                        <a href={repoUrl} target='_blank' rel='noopener noreferrer' className='text-accent-light text-xl hover:underline'>{title}</a>
+                    ) : (
+                        <h2 className='text-accent-light text-xl'>{title}</h2>
+                    )}
+                    <span className='text-text-muted text-sm'>{year}</span>
+                    {repoUrl ? (
+                        <a href={repoUrl} target='_blank' rel='noopener noreferrer' tabIndex={-1} aria-hidden='true'
+                            className='text-text-muted hover:text-accent-light transition-colors'>
+                            <SiGithub size={18} />
+                        </a>
+                    ) : (
+                        <span className='text-text-muted flex items-center gap-1 text-sm'>
+                            <GoLock size={14} /> Private
+                        </span>
+                    )}
+                </div>
+                {projectCredit && <CreditPills credit={projectCredit} />}
+                <p className='text-text'>{description}</p>
+                <ul className='flex flex-wrap gap-2 mt-1'>
+                    {tags.map(tag => (
+                        <li key={tag} className='text-xs px-2 py-1 rounded bg-border text-text'>
+                            {tag}
+                        </li>
+                    ))}
+                </ul>
+            </div>
             {thumbnail && media.length > 0 && (
                 <>
-                    <Tiltable className='sm:w-64 shrink-0 self-stretch'>
+                    <Tiltable className='sm:w-64 shrink-0 self-stretch sm:order-1'>
                         <button
                             onClick={() => setOpen(true)}
                             aria-label={`View ${title} gallery (${media.length} items)`}
@@ -37,8 +66,8 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                                 decoding='async'
                                 className='w-full h-full object-cover transition group-hover:brightness-110'
                             />
-                            <span className='absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1'>
-                                <svg className='w-3 h-3' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden='true'>
+                            <span className='absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1' aria-hidden='true'>
+                                <svg className='w-3 h-3' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
                                     <rect x='3' y='3' width='7' height='7' rx='1' />
                                     <rect x='14' y='3' width='7' height='7' rx='1' />
                                     <rect x='3' y='14' width='7' height='7' rx='1' />
@@ -63,35 +92,6 @@ export default function ProjectCard({ title, year, description, tags, images, vi
                     )}
                 </>
             )}
-            <div className='flex-1 flex flex-col gap-2'>
-                <div className='flex items-center gap-3'>
-                    {repoUrl ? (
-                        <a href={repoUrl} target='_blank' rel='noopener noreferrer' className='text-accent-light text-xl hover:underline'>{title}</a>
-                    ) : (
-                        <h2 className='text-accent-light text-xl'>{title}</h2>
-                    )}
-                    <span className='text-text-muted text-sm'>{year}</span>
-                    {repoUrl ? (
-                        <a href={repoUrl} target='_blank' rel='noopener noreferrer' tabIndex={-1} aria-hidden='true'
-                            className='text-text-muted hover:text-accent-light transition-colors'>
-                            <SiGithub size={18} />
-                        </a>
-                    ) : (
-                        <span className='text-text-muted flex items-center gap-1 text-sm'>
-                            <GoLock size={14} /> Private
-                        </span>
-                    )}
-                </div>
-                {projectCredit && <CreditPills credit={projectCredit} />}
-                <p className='text-text'>{description}</p>
-                <div className='flex flex-wrap gap-2 mt-1'>
-                    {tags.map(tag => (
-                        <span key={tag} className='text-xs px-2 py-1 rounded bg-border text-text'>
-                            {tag}
-                        </span>
-                    ))}
-                </div>
-            </div>
         </Card>
     )
 }
