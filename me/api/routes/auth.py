@@ -207,6 +207,13 @@ async def delete_api_key(
         db.close()
 
 
+@get("/check")
+async def check_auth(request: Request[Any, Any, Any]) -> dict:
+    """Check if the current session is authenticated."""
+    require_auth(request)
+    return {"authenticated": True}
+
+
 auth_router = Router(path="/auth", route_handlers=[
-    login, logout, create_api_key, list_api_keys, delete_api_key
+    login, logout, check_auth, create_api_key, list_api_keys, delete_api_key
 ])

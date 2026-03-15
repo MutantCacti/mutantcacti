@@ -43,6 +43,20 @@ class ApiKey(Base):
     last_used: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
 
+class Transfer(Base):
+    """File and text transfers."""
+    __tablename__ = "transfers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    type: Mapped[str] = mapped_column(String(10), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        CheckConstraint("type IN ('text', 'file')", name="valid_transfer_type"),
+    )
+
+
 class Deadline(Base):
     """Deadlines with slug-based IDs."""
     __tablename__ = "deadlines"

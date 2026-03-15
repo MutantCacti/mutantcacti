@@ -12,3 +12,7 @@ DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 SECRET_KEY = os.environ.get("ME_SECRET_KEY", secrets.token_hex(32))
 SESSION_COOKIE_NAME = "me_session"
 SESSION_MAX_AGE = 60 * 60 * 24 * 30  # 30 days
+
+# Transfers
+TRANSFERS_DIR = BASE_DIR / "data" / "transfers"
+THUMBS_DIR = BASE_DIR / "data" / "thumbs"

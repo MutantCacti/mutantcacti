@@ -67,3 +67,27 @@ class DeadlineResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Transfers
+TransferType = Literal["text", "file"]
+
+
+class BatchDeleteRequest(BaseModel):
+    ids: list[int]
+
+
+class TransferCreate(BaseModel):
+    type: TransferType
+    content: str = Field(..., min_length=1)
+
+
+class TransferResponse(BaseModel):
+    id: int
+    type: TransferType
+    content: str
+    created_at: datetime
+    size: Optional[int] = None
+
+    class Config:
+        from_attributes = True

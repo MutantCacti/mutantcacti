@@ -1,0 +1,272 @@
+import { useEffect, useLayoutEffect, useState, useCallback, useMemo, useRef } from 'react'
+import useTransferStore from '../stores/TransferStore'
+import TransferItem from './TransferItem'
+import TransferBar from './TransferBar'
+
+const MAX_ITEM = 100
+const GAP = 16
+const MIN_ITEM = 40
+
+function spiralBounds(positions: [number, number][]) {
+    if (positions.length === 0) return { cols: 0, rows: 0, minX: 0, minY: 0 }
+    let minX = 0, maxX = 0, minY = 0, maxY = 0
+    for (const [x, y] of positions) {
+        if (x < minX) minX = x
+        if (x > maxX) maxX = x
+        if (y < minY) minY = y
+        if (y > maxY) maxY = y
+    }
+    return { cols: maxX - minX + 1, rows: maxY - minY + 1, minX, minY }
+}
+
+function spiralFill(count: number, aspect: number): [number, number][] {
+    if (count === 0) return []
+    if (count === 1) return [[0, 0]]
+
+    // Grid dimensions shaped to the viewport aspect ratio
+    const cols = Math.max(1, Math.round(Math.sqrt(count * aspect)))
+    const rows = Math.max(1, Math.ceil(count / cols))
+
+    // Walk rectangle outside-in (clockwise perimeter peeling)
+    const all: [number, number][] = []
+    let t = 0, b = rows - 1, l = 0, r = cols - 1
+
+    while (t <= b && l <= r) {
+        for (let x = l; x <= r; x++) all.push([x, t])
+        t++
+        for (let y = t; y <= b; y++) all.push([r, y])
+        r--
+        if (t <= b) {
+            for (let x = r; x >= l; x--) all.push([x, b])
+            b--
+        }
+        if (l <= r) {
+            for (let y = b; y >= t; y--) all.push([l, y])
+            l++
+        }
+    }
+
+    // Reverse to get center-outward order
+    all.reverse()
+
+    // Center around (0, 0)
+    const ox = (cols - 1) / 2
+    const oy = (rows - 1) / 2
+
+    return all.slice(0, count).map(([x, y]) => [x - ox, y - oy])
+}
+
+function rectsIntersect(
+    ax: number, ay: number, aw: number, ah: number,
+    bx: number, by: number, bw: number, bh: number,
+) {
+    return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by
+}
+
+export default function TransferGrid() {
+    const { transfers, error, fetch, uploadFile, clearSelection } = useTransferStore()
+    const [dragging, setDragging] = useState(false)
+    const [lasso, setLasso] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null)
+    const lassoRef = useRef(lasso)
+    lassoRef.current = lasso
+    const [containerSize, setContainerSize] = useState({ w: 0, h: 0 })
+    const containerRef = useRef<HTMLDivElement>(null)
+    const gridRef = useRef<HTMLDivElement>(null)
+    const didLassoRef = useRef(false)
+
+    useEffect(() => { fetch() }, [fetch])
+
+    useLayoutEffect(() => {
+        const el = containerRef.current
+        if (el) setContainerSize({ w: el.clientWidth, h: el.clientHeight })
+    }, [])
+
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+        const obs = new ResizeObserver(([entry]) => {
+            setContainerSize({ w: entry.contentRect.width, h: entry.contentRect.height })
+        })
+        obs.observe(el)
+        return () => obs.disconnect()
+    }, [])
+
+    const aspect = containerSize.w && containerSize.h ? containerSize.w / containerSize.h : 1
+
+    const positions = useMemo(
+        () => spiralFill(transfers.length, aspect),
+        [transfers.length, aspect],
+    )
+
+    const bounds = useMemo(() => spiralBounds(positions), [positions])
+    const { cols, rows } = bounds
+
+    const itemSize = useMemo(() => {
+        if (cols === 0 || rows === 0 || containerSize.w === 0) return MAX_ITEM
+        const fitW = Math.floor((containerSize.w - GAP) / cols) - GAP
+        const fitH = Math.floor((containerSize.h - GAP) / rows) - GAP
+        return Math.max(MIN_ITEM, Math.min(MAX_ITEM, fitW, fitH))
+    }, [cols, rows, containerSize])
+
+    const cell = itemSize + GAP
+
+    // Lasso hit testing
+    const updateLassoSelection = useCallback((l: NonNullable<typeof lasso>) => {
+        const grid = gridRef.current
+        if (!grid || transfers.length === 0) return
+        const cx = grid.offsetWidth / 2
+        const cy = grid.offsetHeight / 2
+
+        const lx = Math.min(l.startX, l.currentX)
+        const ly = Math.min(l.startY, l.currentY)
+        const lw = Math.abs(l.currentX - l.startX)
+        const lh = Math.abs(l.currentY - l.startY)
+
+        const hit: number[] = []
+        for (let i = 0; i < transfers.length; i++) {
+            const [gx, gy] = positions[i]
+            const ix = cx + gx * cell - cell / 2
+            const iy = cy + gy * cell - cell / 2
+            if (rectsIntersect(lx, ly, lw, lh, ix, iy, itemSize, itemSize)) {
+                hit.push(transfers[i].id)
+            }
+        }
+        useTransferStore.setState({ selected: hit })
+    }, [transfers, positions, cell, itemSize])
+
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+        if ((e.target as HTMLElement).closest('button, input')) return
+        if (e.button !== 0) return
+        const grid = gridRef.current
+        if (!grid) return
+        const rect = grid.getBoundingClientRect()
+        const x = e.clientX - rect.left + grid.scrollLeft
+        const y = e.clientY - rect.top + grid.scrollTop
+        clearSelection()
+        setLasso({ startX: x, startY: y, currentX: x, currentY: y })
+        e.preventDefault()
+    }, [clearSelection])
+
+    useEffect(() => {
+        if (!lasso) return
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const grid = gridRef.current
+            if (!grid) return
+            const rect = grid.getBoundingClientRect()
+            const x = e.clientX - rect.left + grid.scrollLeft
+            const y = e.clientY - rect.top + grid.scrollTop
+            const updated = { ...lassoRef.current!, currentX: x, currentY: y }
+            setLasso(updated)
+            updateLassoSelection(updated)
+        }
+
+        const handleMouseUp = () => {
+            didLassoRef.current = true
+            setLasso(null)
+            requestAnimationFrame(() => { didLassoRef.current = false })
+        }
+
+        window.addEventListener('mousemove', handleMouseMove)
+        window.addEventListener('mouseup', handleMouseUp)
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove)
+            window.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [!!lasso, updateLassoSelection])
+
+    const lassoStyle = useMemo(() => {
+        if (!lasso) return null
+        return {
+            left: Math.min(lasso.startX, lasso.currentX),
+            top: Math.min(lasso.startY, lasso.currentY),
+            width: Math.abs(lasso.currentX - lasso.startX),
+            height: Math.abs(lasso.currentY - lasso.startY),
+        } as const
+    }, [lasso])
+
+    const handleFileDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault()
+        setDragging(true)
+    }, [])
+
+    const handleFileDragLeave = useCallback((e: React.DragEvent) => {
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return
+        setDragging(false)
+    }, [])
+
+    const handleFileDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault()
+        setDragging(false)
+        Array.from(e.dataTransfer.files).forEach(f => uploadFile(f))
+    }, [uploadFile])
+
+    return (
+        <div
+            ref={containerRef}
+            className={`flex-1 flex flex-col overflow-auto transition-colors ${
+                dragging ? 'bg-accent/5' : ''
+            }`}
+            onClick={e => {
+                if (!(e.target as HTMLElement).closest('button') && !lassoRef.current && !didLassoRef.current) clearSelection()
+            }}
+            onDragOver={handleFileDragOver}
+            onDragLeave={handleFileDragLeave}
+            onDrop={handleFileDrop}
+        >
+            {error && (
+                <p className="text-red-400 text-sm absolute top-4 left-4 z-10">{error}</p>
+            )}
+
+            {transfers.length === 0 && (
+                <div className="flex-1 relative">
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg px-4">
+                        <TransferBar />
+                    </div>
+                </div>
+            )}
+
+            {transfers.length > 0 && (
+                <div
+                    ref={gridRef}
+                    className="flex-1 relative select-none overflow-visible"
+                    onMouseDown={handleMouseDown}
+                >
+                    <div
+                        className="absolute left-1/2 -translate-x-1/2 w-full max-w-lg px-4 z-20"
+                        style={{
+                            top: `calc(50% + ${(bounds.minY + rows) * cell}px - ${cell / 2}px + ${GAP}px)`,
+                            transition: 'top 0.3s ease-out',
+                        }}
+                    >
+                        <TransferBar />
+                    </div>
+                    {transfers.map((t, i) => {
+                        const [gx, gy] = positions[i]
+                        return (
+                            <div
+                                key={t.id}
+                                className="absolute"
+                                style={{
+                                    left: `calc(50% + ${gx * cell}px - ${cell / 2}px)`,
+                                    top: `calc(50% + ${gy * cell}px - ${cell / 2}px)`,
+                                }}
+                            >
+                                <TransferItem
+                                    transfer={t}
+                                    size={itemSize}
+                                />
+                            </div>
+                        )
+                    })}
+                    {lassoStyle && (
+                        <div
+                            className="absolute pointer-events-none border border-accent/50 rounded-sm z-10"
+                            style={{ ...lassoStyle, backgroundColor: 'rgba(35, 166, 122, 0.08)' }}
+                        />
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}

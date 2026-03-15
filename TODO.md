@@ -26,6 +26,8 @@ Minor frame drops when scrolling past Hilbert/Mandelbrot/Caustic category card c
 
 ## Scale properly to 500% zoom
 
+## Add fr-fr ? translation
+
 ## Add comments to the blog
 
 Making the backend should be taken seriously and paired with future ideas like A/B testing to ensure extensibility.
