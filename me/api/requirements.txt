@@ -1,8 +1,0 @@
-litestar[standard]
-sqlalchemy>=2.0
-pydantic>=2.0
-bcrypt
-python-multipart
-uvicorn
-Pillow
-cairosvg
