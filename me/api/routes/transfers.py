@@ -1,6 +1,7 @@
 import io
 import mimetypes
 import os
+import zipfile
 from typing import Any
 
 from PIL import Image
@@ -10,7 +11,7 @@ from litestar.datastructures import UploadFile
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import NotFoundException, ClientException
 from litestar.params import Body
-from litestar.response import File, Response
+from litestar.response import File, Response, Stream
 
 from config import TRANSFERS_DIR, THUMBS_DIR
 from db import SessionLocal
@@ -215,6 +216,58 @@ async def download_transfer(
         db.close()
 
 
+@post("/batch-download")
+async def batch_download_transfers(
+    data: BatchDeleteRequest,  # Reuse same schema — just a list of IDs
+    request: Request[Any, Any, Any],
+) -> Stream:
+    """Download multiple file transfers as a streaming zip."""
+    require_auth(request)
+
+    db = SessionLocal()
+    try:
+        transfers = (
+            db.query(Transfer)
+            .filter(Transfer.id.in_(data.ids), Transfer.type == "file")
+            .all()
+        )
+        if not transfers:
+            raise NotFoundException("No downloadable files found")
+
+        # Deduplicate filenames within the zip
+        names: dict[str, int] = {}
+        file_entries: list[tuple[str, str]] = []
+        for t in transfers:
+            name = t.content
+            if name in names:
+                names[name] += 1
+                base, ext = os.path.splitext(name)
+                name = f"{base} ({names[name]}){ext}"
+            else:
+                names[name] = 0
+            file_entries.append((str(TRANSFERS_DIR / str(t.id)), name))
+    finally:
+        db.close()
+
+    async def zip_generator():
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for disk_path, arc_name in file_entries:
+                if os.path.exists(disk_path):
+                    zf.write(disk_path, arc_name)
+        buf.seek(0)
+        while chunk := buf.read(STREAM_CHUNK_SIZE):
+            yield chunk
+
+    return Stream(
+        zip_generator(),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="transfers.zip"',
+        },
+    )
+
+
 THUMB_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
 THUMB_SIZE = (150, 150)
 THUMB_QUALITY = 35
@@ -297,5 +350,6 @@ async def thumbnail_transfer(
 
 transfers_router = Router(path="/transfers", route_handlers=[
     create_text_transfer, create_file_transfer, list_transfers,
-    delete_transfer, batch_delete_transfers, download_transfer, thumbnail_transfer,
+    delete_transfer, batch_delete_transfers, batch_download_transfers,
+    download_transfer, thumbnail_transfer,
 ])

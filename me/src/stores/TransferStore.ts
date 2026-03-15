@@ -19,6 +19,7 @@ interface TransferStore {
     remove: (id: number) => Promise<void>
     batchRemove: (ids: number[]) => Promise<void>
     download: (id: number) => void
+    batchDownload: (ids: number[]) => void
     toggleSelect: (id: number) => void
     clearSelection: () => void
 }
@@ -66,12 +67,12 @@ const useTransferStore = create<TransferStore>((set, get) => ({
     activity: '',
     ready: false,
     error: null,
-    statusText: 'try /help',
+    statusText: 'try help',
     selected: [],
     localThumbs: {},
 
     async fetch() {
-        set({ inflight: get().inflight + 1, activity: 'Loading', error: null })
+        set({ inflight: get().inflight + 1, activity: 'Loading', error: null, selected: [] })
         try {
             const res = await api('/')
             const transfers: Transfer[] = await res.json()
@@ -247,6 +248,38 @@ const useTransferStore = create<TransferStore>((set, get) => ({
         if (t && t.type !== 'text') {
             window.open(`${API}/${id}/download`, '_blank')
         }
+    },
+
+    batchDownload(ids: number[]) {
+        const fileIds = ids.filter(id => {
+            const t = get().transfers.find(t => t.id === id)
+            return t && t.type !== 'text'
+        })
+        if (fileIds.length === 0) return
+        if (fileIds.length === 1) {
+            get().download(fileIds[0])
+            return
+        }
+        // POST to batch-download and trigger download from blob
+        fetch(`${API}/batch-download`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: fileIds }),
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(res.statusText)
+                return res.blob()
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'transfers.zip'
+                a.click()
+                URL.revokeObjectURL(url)
+            })
+            .catch(e => set({ error: e.message }))
     },
 
     toggleSelect(id: number) {

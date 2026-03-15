@@ -2,6 +2,7 @@ import accessibubbleLanding from '../assets/images/accessibubble-screenshot-2.we
 import accessibubbleAudit from '../assets/images/accessibubble-screenshot-1.webp'
 import rotateFrames from '../assets/images/rotateai-1.webp'
 import rotateValidation from '../assets/images/rotateai-2.webp'
+import rotateScatter from '../assets/images/rotateai-scatter.webp'
 import cinnamonFrog from '../assets/images/cinnamon-frog.webp'
 import cinnamonSprites from '../assets/images/cinnamon-sprites.webp'
 import cinnamonSprites2 from '../assets/images/cinnamon-sprites-2.webp'
@@ -62,6 +63,7 @@ export const projects: Project[] = [
         images: [
             { src: rotateFrames, alt: 'Diagram showing coordinate frame transformations from Earth frame to whale frame to tag frame' },
             { src: rotateValidation, alt: 'Depth and whale-frame acceleration plots with surface validation intervals highlighted' },
+            { src: rotateScatter, alt: 'Scatter plot of pipeline power consumption versus angular error for accelerometer and magnetometer correction strategies' },
         ],
         featured: true,
     },

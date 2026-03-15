@@ -16,6 +16,7 @@
 }
 
 @theme {
+    --breakpoint-sm: 480px;
     --font-sans: 'Figtree', sans-serif;
 
     --color-accent: #23a67a;
@@ -37,6 +38,13 @@
 html {
     background-color: var(--color-bg);
     overscroll-behavior-y: contain;
+    font-size: 120%;
+}
+
+@media (min-width: 480px) {
+    html {
+        font-size: 110%;
+    }
 }
 
 * {

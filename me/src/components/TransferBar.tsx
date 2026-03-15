@@ -66,36 +66,63 @@ export default function TransferBar() {
     const { fetch, activity, statusText, selected } = useTransferStore()
     const loading = !!activity
 
+    const statusLabel = activity || (selected.length > 0 ? `${selected.length} selected` : statusText)
+
     return (
-        <div className="inline-flex items-center gap-3 select-none">
-            <div className="inline-flex items-center gap-2 px-1 py-1 rounded-xl
-                            bg-surface border border-border/30"
-                 style={{ boxShadow: '0 0 20px 8px rgba(0, 0, 0, 0.2)' }}>
-                <div className="hidden sm:flex flex-1">
+        <>
+            {/* Desktop */}
+            <div className="hidden sm:inline-flex items-center gap-3 select-none">
+                <div className="inline-flex items-center gap-2 px-1 py-1 rounded-xl
+                                bg-surface border border-border/30"
+                     style={{ boxShadow: '0 0 20px 8px rgba(0, 0, 0, 0.2)' }}>
                     <TextInput />
+                    <UploadButton />
+                    <DownloadButton />
                 </div>
-                <div className="sm:hidden">
+                <div className={`inline-flex items-center gap-3 transition-opacity ${loading ? 'opacity-90' : 'opacity-60 hover:opacity-90'}`}>
+                    <button
+                        onClick={() => fetch()}
+                        className="cursor-pointer transition-all rounded-full hover-glow p-1 hover:-translate-y-0.5 focus-visible:-translate-y-0.5"
+                        title="Refresh"
+                    >
+                        <MeLogo
+                            className="h-8 w-8"
+                            fill="var(--color-accent)"
+                            glow={loading}
+                        />
+                    </button>
+                    <span className="text-xs text-accent whitespace-nowrap">
+                        {statusLabel}
+                    </span>
+                </div>
+            </div>
+
+            {/* Mobile */}
+            <div className="sm:hidden flex flex-col items-center gap-3 select-none">
+                <div className={`inline-flex items-center gap-3 transition-opacity ${loading ? 'opacity-90' : 'opacity-60 hover:opacity-90'}`}>
+                    <button
+                        onClick={() => fetch()}
+                        className="cursor-pointer transition-all rounded-full hover-glow p-1"
+                        title="Refresh"
+                    >
+                        <MeLogo
+                            className="h-10 w-10"
+                            fill="var(--color-accent)"
+                            glow={loading}
+                        />
+                    </button>
+                    <span className="text-xs text-accent whitespace-nowrap">
+                        {statusLabel}
+                    </span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-1 py-1 rounded-xl
+                                bg-surface border border-border/30"
+                     style={{ boxShadow: '0 0 20px 8px rgba(0, 0, 0, 0.2)' }}>
                     <PasteButton />
+                    <UploadButton />
+                    <DownloadButton />
                 </div>
-                <UploadButton />
-                <DownloadButton />
             </div>
-            <div className={`inline-flex items-center gap-3 transition-opacity ${loading ? 'opacity-90' : 'opacity-60 hover:opacity-90'}`}>
-                <button
-                    onClick={() => fetch()}
-                    className="cursor-pointer transition-all rounded-full hover-glow p-1 hover:-translate-y-0.5 focus-visible:-translate-y-0.5"
-                    title="Refresh"
-                >
-                    <MeLogo
-                        className="h-8 w-8"
-                        fill="var(--color-accent)"
-                        glow={loading}
-                    />
-                </button>
-                <span className="text-xs text-accent whitespace-nowrap">
-                    {activity || (selected.length > 0 ? `${selected.length} selected` : statusText)}
-                </span>
-            </div>
-        </div>
+        </>
     )
 }

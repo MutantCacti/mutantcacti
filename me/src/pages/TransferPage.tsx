@@ -62,25 +62,32 @@ export default function TransferPage() {
             }
             return
         }
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !(e.target instanceof HTMLInputElement)) {
-            e.preventDefault()
-            const { selected, download } = useTransferStore.getState()
-            if (selected.length > 0) {
-                selected.forEach(id => download(id))
-            } else {
-                document.getElementById('upload-input')?.click()
+        if (e.key === 'Enter') {
+            const inputEmpty = !(e.target instanceof HTMLInputElement) || !(e.target as HTMLInputElement).value
+            const { selected, batchDownload } = useTransferStore.getState()
+            if (inputEmpty && selected.length > 0) {
+                e.preventDefault()
+                batchDownload(selected)
+                return
             }
-            return
-        }
-        if (e.key === '/' && !(e.target instanceof HTMLInputElement)) {
-            e.preventDefault()
-            document.getElementById('text-input')?.focus()
+            if (!(e.target instanceof HTMLInputElement)) {
+                e.preventDefault()
+                document.getElementById('upload-input')?.click()
+                return
+            }
         }
         if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
-            if (e.target instanceof HTMLInputElement) return
+            if (e.target instanceof HTMLInputElement && (e.target as HTMLInputElement).value) return
             e.preventDefault()
+            if (e.target instanceof HTMLInputElement) (e.target as HTMLInputElement).blur()
             const all = useTransferStore.getState().transfers.map(t => t.id)
             useTransferStore.setState({ selected: all })
+            return
+        }
+        // Redirect printable keystrokes to text input
+        if (!(e.target instanceof HTMLInputElement) && !e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) {
+            clearSelection()
+            document.getElementById('text-input')?.focus()
         }
     }, [showConfirm])
 

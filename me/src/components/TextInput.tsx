@@ -16,29 +16,28 @@ export default function TextInput() {
     const caretIdx = useRef(0)
     const [caretColor, setCaretColor] = useState(CARET_COLORS[0])
 
-    const { selected, download } = useTransferStore()
+    const { selected, batchDownload } = useTransferStore()
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault()
             if (selected.length > 0) {
-                selected.forEach(id => download(id))
+                batchDownload(selected)
             } else {
                 document.getElementById('upload-input')?.click()
             }
             return
         }
-        if (e.key === 'Enter' && value.trim() === '/help') {
+        if (e.key === 'Enter' && value.trim() === 'help') {
             createText([
                 'Keybinds',
-                'Ctrl+Enter — Upload / Download selected',
+                'Enter — Upload / Download selected',
                 'Ctrl+A — Select all',
                 'Ctrl+V — Paste text or files',
                 'Ctrl+Esc — Logout',
                 'Enter — Submit text',
                 'Delete — Delete selected',
                 'Escape — Clear selection',
-                '/ — Focus text input',
                 'Click — Copy text / Select file',
                 'Double-click — Download file',
                 'Click+drag — Lasso select',
@@ -63,7 +62,7 @@ export default function TextInput() {
     }
 
     return (
-        <>
+        <div className="flex-1">
         <label htmlFor="text-input" className="sr-only">Transfer text</label>
         <input
             type="text"
@@ -78,11 +77,11 @@ export default function TextInput() {
             placeholder="Send text"
             id="text-input"
             className="w-full bg-bg/70 rounded-lg
-                       px-3 py-2 text-sm text-text placeholder:text-text-muted
+                       px-3 py-2 text-xs text-text placeholder:text-text-muted
                        hover:placeholder:text-accent focus:placeholder:text-accent
                        placeholder:transition-colors disabled:opacity-50"
             style={{ caretColor }}
         />
-        </>
+        </div>
     )
 }

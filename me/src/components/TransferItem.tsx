@@ -59,6 +59,8 @@ export default function TransferItem({ transfer, size = 100 }: TransferItemProps
     function handleClick() {
         if (transfer.type === 'text') {
             copyText()
+            if (selected.includes(transfer.id)) toggleSelect(transfer.id)
+            return
         } else {
             // Delay toggle so double-click can cancel it
             clickTimer.current = window.setTimeout(() => {
