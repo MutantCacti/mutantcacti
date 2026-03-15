@@ -1,14 +1,14 @@
 [Unit]
-Description=me.mutantcacti.com API
+Description=shelf.mutantcacti.com API
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/mutantcacti/me/api
-Environment="PATH=/var/www/mutantcacti/me/api/.venv/bin"
-ExecStart=/var/www/mutantcacti/me/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+WorkingDirectory=/var/www/shelf/api
+Environment="PATH=/var/www/shelf/api/.venv/bin"
+ExecStart=/var/www/shelf/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 
