@@ -8,7 +8,6 @@ Run with: pytest test_api.py -v
 """
 
 import pytest
-from datetime import datetime, timedelta
 
 
 # === FIXTURES (to be implemented) ===
@@ -121,107 +120,4 @@ def test_delete_nonexistent_api_key(auth_client):
 
 def test_api_key_updates_last_used(client, api_key):
     """Using an API key updates its last_used timestamp."""
-    pass
-
-
-# === DEADLINES: CRUD ===
-
-def test_create_deadline(auth_client):
-    """POST /deadlines creates a deadline with slug ID."""
-    pass
-
-
-def test_create_deadline_duplicate_id(auth_client):
-    """POST /deadlines with existing ID returns 409."""
-    pass
-
-
-def test_create_deadline_invalid_slug(auth_client):
-    """POST /deadlines with invalid slug pattern returns 422."""
-    pass
-
-
-def test_get_deadline(auth_client):
-    """GET /deadlines/{id} returns the deadline."""
-    pass
-
-
-def test_get_deadline_not_found(auth_client):
-    """GET /deadlines/{id} returns 404 for unknown id."""
-    pass
-
-
-def test_update_deadline(auth_client):
-    """PATCH /deadlines/{id} updates specified fields only."""
-    pass
-
-
-def test_update_deadline_not_found(auth_client):
-    """PATCH /deadlines/{id} returns 404 for unknown id."""
-    pass
-
-
-def test_delete_deadline(auth_client):
-    """DELETE /deadlines/{id} removes the deadline."""
-    pass
-
-
-def test_delete_deadline_not_found(auth_client):
-    """DELETE /deadlines/{id} returns 404 for unknown id."""
-    pass
-
-
-# === DEADLINES: LIST & FILTER ===
-
-def test_list_deadlines(auth_client):
-    """GET /deadlines returns all deadlines sorted by date."""
-    pass
-
-
-def test_list_deadlines_filter_by_status(auth_client):
-    """GET /deadlines?status=active filters by status."""
-    pass
-
-
-def test_list_deadlines_filter_by_project(auth_client):
-    """GET /deadlines?project=foo filters by project."""
-    pass
-
-
-def test_list_deadlines_filter_by_days(auth_client):
-    """GET /deadlines?days=7 filters by upcoming N days."""
-    pass
-
-
-def test_upcoming_deadlines(auth_client):
-    """GET /deadlines/upcoming returns active/watching within N days."""
-    pass
-
-
-def test_upcoming_excludes_completed(auth_client):
-    """GET /deadlines/upcoming excludes completed/expired deadlines."""
-    pass
-
-
-# === DEADLINES: TAGS ===
-
-def test_deadline_tags_stored_as_json(auth_client):
-    """Tags are stored as JSON and returned as list."""
-    pass
-
-
-def test_deadline_update_tags(auth_client):
-    """PATCH can update tags without affecting other fields."""
-    pass
-
-
-# === DEADLINES: STATUS ===
-
-def test_deadline_status_validation(auth_client):
-    """Status must be one of: watching, active, completed, expired."""
-    pass
-
-
-def test_deadline_default_status(auth_client):
-    """Default status is 'watching' when not specified."""
     pass

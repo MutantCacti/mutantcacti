@@ -4,7 +4,6 @@ from litestar.config.cors import CORSConfig
 from config import TRANSFERS_DIR
 from db import init_db, get_session
 from routes.auth import auth_router
-from routes.deadlines import deadlines_router
 from routes.transfers import transfers_router
 
 
@@ -22,7 +21,7 @@ cors_config = CORSConfig(
 )
 
 app = Litestar(
-    route_handlers=[health_check, auth_router, deadlines_router, transfers_router],
+    route_handlers=[health_check, auth_router, transfers_router],
     cors_config=cors_config,
     on_startup=[lambda: (init_db(), TRANSFERS_DIR.mkdir(parents=True, exist_ok=True), __import__('config').THUMBS_DIR.mkdir(parents=True, exist_ok=True))],
     debug=False,
