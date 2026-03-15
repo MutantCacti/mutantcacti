@@ -3,6 +3,7 @@
 // θ(t) = 2πt
 
 const R = 12, d = R / 3, cx = 16, cy = 16
+const END_OFFSET = 0.3  // radians to stop early (0 = full revolution)
 
 // Outer circle - clockwise in SVG
 const N_circ = 60
@@ -16,17 +17,18 @@ for (let i = 0; i <= N_circ; i++) {
 // Quadratic ensures dr/dθ = 0 at start → tangent perpendicular to radius → ~90° at junction
 const N_spiral = 80
 const θ0 = 0.03   // tiny angular gap at junction
-const θ1 = 2 * Math.PI - 0.001
+const θ1 = 2 * Math.PI - END_OFFSET
 const spiralPts = []
 
 for (let i = 0; i <= N_spiral; i++) {
     const t = i / N_spiral
     const θ = θ0 + (θ1 - θ0) * t
-    const r = d + (R - d) * t * t
+    const rMax = R - 0.5  // stop short of outer circle to avoid seam artifact
+    const r = d + (rMax - d) * t * t
     spiralPts.push([cx + r * Math.cos(θ), cy - r * Math.sin(θ)])
 }
 
-// Build path: outer circle → line to junction → spiral → Z
+// Build path: outer circle → line to junction → spiral → line back to center → Z
 let path = `M ${circPts[0][0].toFixed(2)},${circPts[0][1].toFixed(2)}`
 for (let i = 1; i < circPts.length; i++) {
     path += ` L ${circPts[i][0].toFixed(2)},${circPts[i][1].toFixed(2)}`
@@ -35,7 +37,8 @@ path += ` L ${(cx + d).toFixed(2)},${cy.toFixed(2)}`
 for (const [x, y] of spiralPts) {
     path += ` L ${x.toFixed(2)},${y.toFixed(2)}`
 }
-path += ' Z'
+// Close back to center then Z returns to outer circle start — no crossing
+path += ` L ${cx.toFixed(2)},${cy.toFixed(2)} Z`
 
 console.log(path)
 
