@@ -12,7 +12,7 @@ export default function Layout() {
             <RouteAnnouncer />
             <a href='#main' className='sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-bg focus:text-accent-light focus:px-4 focus:py-2 focus:rounded focus:outline-2 focus:outline-highlight'>Skip to content</a>
             <NavBar />
-            <main id='main' className='w-[92%] md:w-2/3 lg:w-1/2 flex flex-col items-center'>
+            <main id='main' className='w-[92%] max-w-[720px] flex flex-col items-center'>
                 <Outlet />
             </main>
             <footer className='text-text-muted text-sm py-6 flex flex-col items-center gap-1'>

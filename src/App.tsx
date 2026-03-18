@@ -9,7 +9,7 @@ import NotFound from './pages/NotFound'
 
 function App() {
     return (
-        <div className='relative min-h-screen bg-bg text-text'>
+        <div className='relative min-h-screen bg-bg-deep text-text'>
             <GosperCanvas />
             <div className='relative min-h-screen'>
                 <BrowserRouter>

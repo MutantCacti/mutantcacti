@@ -170,7 +170,7 @@ function GosperCanvas() {
             offCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y)
 
             const styles = getComputedStyle(canvas!)
-            offCtx.strokeStyle = styles.getPropertyValue('--color-surface').trim()
+            offCtx.strokeStyle = styles.getPropertyValue('--color-bg').trim()
             offCtx.lineWidth = lineWidth
             offCtx.lineJoin = 'round'
             offCtx.lineCap = 'round'
