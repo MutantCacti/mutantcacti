@@ -4,6 +4,21 @@
 .venv
 __pycache__/
 *.pyc
-**/node_modules/
-**/dist/
+node_modules/
+dist/
+dist-ssr/
 shelf/
+
+# Logs
+*.log
+
+# Editor directories and files
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tsbuildinfo
+*.sh
