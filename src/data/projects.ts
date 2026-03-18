@@ -1,8 +1,11 @@
-import accessibubbleLanding from '../assets/images/accessibubble-screenshot-2.webp'
-import accessibubbleAudit from '../assets/images/accessibubble-screenshot-1.webp'
+import accessibubbleHome from '../assets/images/accessibubble-home.webp'
+import accessibubbleAudit from '../assets/images/accessibubble-audit.webp'
+import accessibubbleLight from '../assets/images/accessibubble-light.webp'
 import rotateFrames from '../assets/images/rotateai-1.webp'
 import rotateValidation from '../assets/images/rotateai-2.webp'
 import rotateScatter from '../assets/images/rotateai-scatter.webp'
+import shelfMain from '../assets/images/shelf-main.webp'
+import shelfLogin from '../assets/images/shelf-login.webp'
 import cinnamonFrog from '../assets/images/cinnamon-frog.webp'
 import cinnamonSprites from '../assets/images/cinnamon-sprites.webp'
 import cinnamonSprites2 from '../assets/images/cinnamon-sprites-2.webp'
@@ -55,9 +58,9 @@ export type Project = {
 
 export const projects: Project[] = [
     {
-        title: 'AI Rotate',
+        title: 'Rotate AI',
         year: '2026',
-        description: 'Research project using hybrid ML and deterministic algorithms to correct the orientation of sensor tags on free-ranging whales. I will deploy Han Yin\'s inference pipeline onto embedded hardware with power-efficient duty cycling.',
+        description: 'Research project using transformers to correct the orientation of sensor tags on free-ranging whales. I will deploy Han Yin\'s correction models onto an online platform, as well as embedded hardware.',
         tags: ['TFLite Micro', 'C', 'STM32', 'Python'],
         credit: 'Dr Juan Ye, Prof Patrick Miller, George Sato, Han Yin',
         images: [
@@ -69,14 +72,28 @@ export const projects: Project[] = [
     },
     {
         title: 'Accessibubble',
-        year: '2025–',
+        year: '2025–2026',
         description: 'Free online accessibility checker that crowdsources user testing data through public reviews and NLP.',
         tags: ['Accessibility', 'NLP', 'Full-Stack'],
         credit: 'ac516, ajp34, as696, ep247, eb379, gg89, irv1, kc237, ky39, mm586, pm272, pt76, rh265, wf27, teym1, tfb6, vh46, zlt1',
         images: [
-            { src: accessibubbleLanding, alt: 'Accessibubble landing page with search bar and recent audit results', credit: '@teym1, Thomas Yonaha-McCoy' },
-            { src: accessibubbleAudit, alt: 'Accessibubble audit results showing accessibility score and violations', credit: '@teym1, Thomas Yonaha-McCoy, Claude Opus 4.5:4.6' },
+            { src: accessibubbleHome, alt: 'Accessibubble home page with search bar and recent audit results', credit: '@teym1, Thomas Yonaha-McCoy' },
+            { src: accessibubbleAudit, alt: 'Accessibubble audit results showing accessibility score and violations', credit: '@teym1, Thomas Yonaha-McCoy, @tfb6, Tom Barker' },
+            { src: accessibubbleLight, alt: 'Accessibubble light theme showing audit interface', credit: '@teym1, Thomas Yonaha-McCoy' },
         ],
+        featured: true,
+    },
+    {
+        title: 'Shelf',
+        year: '2026',
+        description: 'A website for sending things to yourself.',
+        tags: ['React', 'Litestar', 'SQLite', 'Tailwind'],
+        credit: '@KingLavaCactus, Toby Davies',
+        images: [
+            { src: shelfMain, alt: 'Shelf main view showing a text note and a PDF file with thumbnail' },
+            { src: shelfLogin, alt: 'Shelf login page with password field and sign in button' },
+        ],
+        repoUrl: 'https://github.com/MutantCacti/shelf',
         featured: true,
     },
     {
