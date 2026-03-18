@@ -52,8 +52,8 @@ export default function Profile() {
                 <h2 className='text-accent-light text-2xl mb-4'>About Me</h2>
                 <p className='mb-2'>I was born in Singapore. By eighteen I'd lived in Tokyo, Athens, Seoul, Mumbai, back to Singapore, then Minnesota, now Scotland.</p>
                 <p className='mb-2'>I study computer science because it combines reasoning, logic, language, psychology, philosophy and science. I compose music, write poetry, and make games.</p>
-                <p className='mb-2'>I think a lot about what it means to teach something to think. I like recursion and the number four.</p>
-                <p className='mb-2'>Why does it so often take lying to get the chance to be honest?</p>
+                <p className='mb-2'>I like recursion and the number four. I think about how to teach electricity to think.</p>
+                <p className='mb-2'>For me, answers are not stable ground — questions I cannot answer are stable ground. I am always seeking to reveal which stabilities are false.</p>
             </Card>
         </>
     )
