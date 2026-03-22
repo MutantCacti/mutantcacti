@@ -103,6 +103,19 @@ html {
 /* Hilbert canvas */
 canvas.hilbert { --grain-opacity: 0.1; }
 
+/* Audio player */
+.audio-player {
+    accent-color: var(--color-highlight);
+    background: var(--color-surface);
+}
+.audio-player::-webkit-media-controls-panel {
+    background: var(--color-surface);
+}
+.audio-player::-webkit-media-controls-current-time-display,
+.audio-player::-webkit-media-controls-time-remaining-display {
+    color: var(--color-highlight);
+}
+
 /* Blog prose typography */
 .prose {
     color: var(--color-accent-subtle);
