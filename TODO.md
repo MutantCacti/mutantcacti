@@ -6,9 +6,7 @@ For the Music category card on Blog.
 
 ## Add an <Image/> MDX component for posts
 
-## Write a music player component.
-
-This should be made stateful in Layout so that navigating around the site keeps tracks playing.
+## Make Audio stateful in Layout/NavBar so that navigating around the site keeps tracks playing.
 
 ## Find the original notebook with Video and get the more accurate date
 
