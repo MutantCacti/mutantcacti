@@ -23,7 +23,33 @@ export default function Projects() {
             if (el) observer.observe(el)
         }
 
-        return () => observer.disconnect()
+        let wasAtBottom = false
+        function onScroll() {
+            const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 50
+            if (atBottom) {
+                wasAtBottom = true
+                setActiveIndex(projects.length - 1)
+            } else if (wasAtBottom) {
+                wasAtBottom = false
+                const center = window.innerHeight / 2
+                let closest = 0
+                let minDist = Infinity
+                for (let i = 0; i < cardRefs.current.length; i++) {
+                    const el = cardRefs.current[i]
+                    if (!el) continue
+                    const rect = el.getBoundingClientRect()
+                    const dist = Math.abs(rect.top + rect.height / 2 - center)
+                    if (dist < minDist) { minDist = dist; closest = i }
+                }
+                setActiveIndex(closest)
+            }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true })
+
+        return () => {
+            observer.disconnect()
+            window.removeEventListener('scroll', onScroll)
+        }
     }, [])
 
     function scrollTo(index: number) {
