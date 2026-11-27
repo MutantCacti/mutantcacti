@@ -1,0 +1,296 @@
+<title>mutantcacti prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300&display=swap">
+<style>
+/* Layout: the page is a sky. Blue above, a warm horizon below, a sun by day and stars by night.
+   Three projects first, then the ordered list, then the person, then everything else, small.
+   Data on the page mirrors the site's model: a flat array of repositories and an order array of names. */
+:root {
+  --sky:#91d5f9; --mid:#c9efff; --horizon:#fff4dd; --ink:#132c4b; --muted:#435d79; --line:#97c5de;
+  --link:#006197; --coral:#e76250; --sun:#fddb72; --card:#f4fdff; --emblem:#006197; --eye:#fff6c9;
+  --glow:rgba(253,219,114,.85); --cloud:rgba(255,255,255,.55); --stars:none; --glass:rgba(244,253,255,.42); --rule:#6fb2dc;
+  --display:"Atkinson Hyperlegible Next","Segoe UI",Roboto,sans-serif;
+  --word:"Outfit","Avenir Next","Segoe UI",sans-serif;
+  --body:"Atkinson Hyperlegible Next","Segoe UI",Roboto,sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --sky:#0b142f; --mid:#1f1c3d; --horizon:#492746; --ink:#e1f2f9; --muted:#96b6ca; --line:#414468;
+  --link:#41e2f4; --coral:#ff9685; --sun:#f4d576; --card:#242641; --emblem:#1dfbde; --eye:#f2fffb;
+  --glow:rgba(65,226,244,.16); --cloud:rgba(255,255,255,0); --stars:url(__STARS__); --glass:rgba(36,38,65,.45); --rule:#4d5182; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --sky:#0b142f; --mid:#1f1c3d; --horizon:#492746; --ink:#e1f2f9; --muted:#96b6ca; --line:#414468;
+  --link:#41e2f4; --coral:#ff9685; --sun:#f4d576; --card:#242641; --emblem:#1dfbde; --eye:#f2fffb;
+  --glow:rgba(65,226,244,.16); --cloud:rgba(255,255,255,0); --stars:url(__STARS__); --glass:rgba(36,38,65,.45); --rule:#4d5182; color-scheme: dark }
+
+html { background:var(--sky); }
+/* the sky is pixel art: a faint grain tile and a sparse star tile, drawn with nearest-neighbour sampling.
+   One grain cell is 4 of the device's own pixels: the script sets --cell to 4px divided by the device pixel ratio */
+body::before { content:""; position:absolute; inset:0; pointer-events:none; image-rendering:pixelated;
+  background:var(--stars) top center / 1200px 720px repeat-x, url(__GRAIN__) 0 0 / calc(128 * var(--cell, 4px)) calc(128 * var(--cell, 4px)); }
+body { color:var(--ink); font-family:var(--body); font-size:1.0625rem; line-height:1.5; min-height:100%; position:relative;
+  background:
+    radial-gradient(circle at 88% 5.5rem, var(--glow) 0, transparent 8rem),
+    radial-gradient(ellipse 16rem 2.6rem at 18% 3.5rem, var(--cloud) 0, transparent 70%),
+    radial-gradient(ellipse 11rem 2rem at 30% 5rem, var(--cloud) 0, transparent 70%),
+    radial-gradient(ellipse 14rem 2.2rem at 62% 21rem, var(--cloud) 0, transparent 70%),
+    linear-gradient(180deg, var(--sky) 0, var(--mid) 30rem, var(--horizon) 100%);
+  background-repeat:no-repeat;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:1.25rem 4rem; }
+.page { position:relative; max-width:62rem; margin:0 auto; display:flex; flex-direction:column; gap:3rem; }
+a { color:var(--link); text-decoration-thickness:1px; text-underline-offset:2px; }
+a:focus-visible { outline:3px solid var(--coral); outline-offset:3px; border-radius:3px; }
+
+nav { display:flex; flex-wrap:wrap; gap:.25rem 1.5rem; align-items:baseline; font-family:var(--mono); font-size:.875rem; }
+nav h1 { font-family:var(--word); font-weight:300; font-size:1.75rem; line-height:1; letter-spacing:.01em; margin:0 auto 0 0; }
+
+.top { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem; margin:0; padding:0; list-style:none; }
+/* each container is a sheet hanging from a rule: a solid line on top, a faint square-cornered pane below it */
+.top li, .list, .me, .rest { background:var(--glass); border:0; border-top:3px solid var(--rule); border-radius:2px;
+  -webkit-backdrop-filter:blur(14px) saturate(1.25); backdrop-filter:blur(14px) saturate(1.25); }
+.top li { padding:1.25rem; display:flex; flex-direction:column; gap:.5rem; min-width:0; }
+.top h2 { font-family:var(--display); font-weight:700; font-size:clamp(1.35rem, 2.6vw, 1.75rem); line-height:1.1; letter-spacing:-0.01em; margin:0; text-wrap:balance; overflow-wrap:anywhere; }
+.top p { margin:0; }
+.note { color:var(--muted); }
+.when { font-family:var(--mono); font-size:.8125rem; color:var(--muted); margin-top:auto; }
+/* a name that leads somewhere is underlined; a private or missing one is plain text */
+.name a, .top h2 a { color:inherit; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
+.name a:hover, .top h2 a:hover { text-decoration-color:var(--coral); }
+
+.label { font-family:var(--body); font-weight:400; font-size:1rem; color:var(--muted); margin:0 0 .5rem 1.25rem; }
+.list { list-style:none; margin:0; padding:.35rem 1.25rem; }
+.list > li:last-child, .rest li:nth-last-child(-n+2) { border-bottom:0; }
+.list > li { display:grid; grid-template-columns:minmax(0,13rem) minmax(0,1fr) auto; gap:.15rem 1.25rem; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--line); }
+.list .name { font-family:var(--display); font-weight:500; font-size:1.1875rem; overflow-wrap:anywhere; }
+.list .when { margin:0; white-space:nowrap; }
+.list .name { display:flex; align-items:center; gap:.6rem; }
+.pic { width:1.75rem; height:1.75rem; border-radius:2px; flex:none; }
+
+.kids { grid-column:1 / -1; list-style:none; margin:.2rem 0 0; padding:0 0 0 2.35rem; display:flex; flex-direction:column; gap:.2rem; }
+.kids li { display:flex; flex-wrap:wrap; gap:.1rem .9rem; align-items:baseline; font-size:1rem; }
+.kids .name { font-family:var(--body); font-size:1rem; font-weight:500; }
+
+.mid { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,1fr); gap:2.5rem; align-items:start; }
+.me { display:flex; flex-direction:column; gap:.9rem; padding:1.25rem; }
+.emblem { position:relative; width:7.5rem; height:7.5rem; background:var(--emblem);
+  -webkit-mask:url(__MASK__) center / contain no-repeat; mask:url(__MASK__) center / contain no-repeat; }
+/* the three eyes are a second cut-out laid over the first, so they can carry their own light */
+.eyes { position:absolute; inset:0; background:var(--eye);
+  -webkit-mask:url(__EYES__) center / contain no-repeat; mask:url(__EYES__) center / contain no-repeat; }
+.crest { display:block; position:relative; width:7.5rem; height:7.5rem; image-rendering:pixelated; }
+.crest .emblem { position:absolute; inset:0; }
+.me dl { margin:0; display:flex; flex-direction:column; gap:.2rem; min-width:0; }
+.me dt { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.me dd { margin:0; }
+.me .who { font-family:var(--display); font-weight:700; font-size:1.375rem; }
+.me .who { line-height:1.15; }
+.me .bio { color:var(--muted); margin-bottom:.35rem; }
+.me .who a { color:inherit; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
+.me .who a:hover { text-decoration-color:var(--coral); }
+.me .sel { font-family:var(--mono); font-size:.8125rem; user-select:all; overflow-wrap:anywhere; }
+.me .links { font-family:var(--mono); font-size:.875rem; display:flex; flex-wrap:wrap; gap:.1rem 1.25rem; }
+
+/* the bottom of the page: everything not in the order array, kept small */
+.rest { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:0 2.5rem; font-size:.9375rem; padding:.35rem 1.25rem; }
+.rest li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:0 1rem; align-items:baseline; align-content:start; padding:.4rem 0; border-bottom:1px solid var(--line); }
+.rest .name { font-weight:500; overflow-wrap:anywhere; }
+.rest .when { margin:0; font-size:.75rem; white-space:nowrap; }
+.rest .note { grid-column:1 / -1; font-size:.875rem; }
+
+@media (max-width: 46rem) {
+  .top { grid-template-columns:1fr; }
+  .list > li { grid-template-columns:minmax(0,1fr) auto; }
+  .list > li > .note { grid-column:1 / -1; grid-row:2; }
+  .rest { grid-template-columns:1fr; }
+  .rest li:nth-last-child(2) { border-bottom:1px solid var(--line); }
+  .mid { grid-template-columns:1fr; }
+  .me { flex-direction:row; align-items:center; gap:1rem; }
+  .crest, .crest .emblem { width:5rem; height:5rem; flex:none; }
+}
+
+/* the résumé opens over the page as a sheet of paper */
+nav .open { font:inherit; color:var(--link); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
+nav .open:focus-visible, .cv .shut:focus-visible { outline:3px solid var(--coral); outline-offset:3px; border-radius:3px; }
+dialog.cv { width:100vw; height:100dvh; max-width:none; max-height:none; margin:0; padding:0; border:0; border-radius:0;
+  background:var(--card); color:var(--ink); overflow:auto; }
+.cv .sheet { max-width:50rem; margin:0 auto; padding:4rem max(16px, env(safe-area-inset-right, 0px)) 3rem max(16px, env(safe-area-inset-left, 0px)); font-size:.9375rem; line-height:1.45; }
+/* the script puts Close exactly where the Résumé button was, so the same spot opens and closes */
+.cv .shut { position:fixed; top:1.25rem; right:16px; font-family:var(--mono); font-size:.875rem; line-height:1.5; color:var(--link); background:var(--card); box-shadow:0 0 0 .4rem var(--card);
+  border:0; padding:0; cursor:pointer; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
+.cv h2 { font-family:var(--display); font-weight:700; font-size:1.75rem; margin:0 0 .4rem; }
+.cv .contact { margin:0 0 .2rem; overflow-wrap:anywhere; }
+.cv .lead { margin:.9rem 0 0; }
+.cv h3 { font-family:var(--display); font-weight:700; font-size:.875rem; letter-spacing:.08em; margin:1.4rem 0 .5rem; padding-bottom:.2rem; border-bottom:2px solid var(--rule); }
+.cv .job { display:flex; flex-wrap:wrap; justify-content:space-between; gap:0 1rem; align-items:baseline; margin:.7rem 0 .15rem; }
+.cv .job b { font-weight:700; }
+.cv .job span { font-family:var(--mono); font-size:.75rem; letter-spacing:.04em; color:var(--muted); white-space:nowrap; }
+.cv p { margin:0 0 .35rem; }
+:target { scroll-margin-top:1.5rem; animation:here 2.4s ease-out; }
+@keyframes here { from { background-color:var(--sun); } }
+@media (prefers-reduced-motion: reduce) { :target { animation:none; } }
+</style>
+
+<div class="page">
+  <nav aria-label="Site" id="nav"><h1>mutantcacti</h1></nav>
+
+  <ul class="top" id="top" aria-label="Three projects"></ul>
+
+  <div class="mid">
+    <ul class="list" id="list" aria-label="More projects"></ul>
+    <section class="me" aria-label="About">
+      <a class="crest" id="about" aria-label="About me"><div class="emblem"></div><div class="eyes"></div></a>
+      <dl id="me"></dl>
+    </section>
+  </div>
+
+  <section aria-labelledby="h-rest">
+    <h2 class="label" id="h-rest">My projects</h2>
+    <ul class="rest" id="rest"></ul>
+  </section>
+</div>
+
+<dialog class="cv" id="cv" aria-labelledby="cv-name">
+  <form method="dialog"><button class="shut" id="shut">Close</button></form>
+  <div class="sheet">
+    <h2 id="cv-name">Maxence Morel Dierckx</h2>
+    <p class="contact">mutantcacti@gmail.com</p>
+    <p class="contact"><a href="https://mutantcacti.com">mutantcacti.com</a> • <a href="https://github.com/MutantCacti">github.com/MutantCacti</a> • <a href="https://linkedin.com/in/moreldierckxm">linkedin.com/in/moreldierckxm</a></p>
+    <p class="lead">Research interests: efficient and edge machine learning, optimisation, evolutionary architecture search, biologically inspired intelligence, pipelining and parallelisation, AI safety.</p>
+
+    <h3>EDUCATION</h3>
+    <div class="job"><b>University of St Andrews, Scotland - BSc (Hons) Computer Science</b><span>JUNE 2027</span></div>
+    <p>Relevant coursework: Computational Complexity, Advanced Programming Projects, Operating Systems, Databases, Artificial Intelligence, Signal Processing, Computer Graphics.</p>
+    <div class="job"><b>Dulwich College, Singapore - IB Diploma</b><span>JULY 2023</span></div>
+    <p>41/45 IB. Subjects: HL: Computer Science, Math AA, Physics. SL: Economics, English, Spanish.</p>
+
+    <h3>RESEARCH</h3>
+    <div class="job"><b>Research Intern, Scottish Oceans Institute (StARIS Prize)</b><span>FEBRUARY 2026 - PRESENT</span></div>
+    <p>Designed <a href="#p-rotateai-pipelines">a model-free orientation pipeline</a> that cut estimated power on STM32U microcontrollers ~1,500 times (269 to 0.18 µW) and halved mean orientation error (11.8° to 5.1°) versus previous best transformer model. Built <a href="#p-rotateai-simulator">Python whale tag simulator</a> to evaluate ML feasibility on low-power hardware for the Sea Mammal Research Unit. Compressed and optimised sensor inference cycle in C++ with LiteRT Micro.</p>
+    <div class="job"><b>Senior Honours Project, University of St Andrews</b><span>SEPTEMBER 2026 – PRESENT</span></div>
+    <p>Write <a href="#p-nand-evolver">“Evolutionary Topology Search in Stateful Logic Gate Networks,”</a> supervised by Professor Christopher Jefferson. Design credit-assignment ML architecture for NAND graphs under selection, targeting resource-constrained hardware. Reliably solved XOR, multiplexer and timing tasks (100% on 10+ seeds), scaling to 6-bit parity and 11-bit MUX; targeting MNIST.</p>
+
+    <h3>EMPLOYMENT</h3>
+    <div class="job"><b>Residential Assistant, IELLI</b><span>JUNE – AUGUST 2026</span></div>
+    <p>Mentored 22 students aged 16-18 at a University of St Andrews summer school. Developed <a href="#p-roll-call">a web app automating nightly roll call</a> for safety of students.</p>
+
+    <h3>VOLUNTEERING</h3>
+    <div class="job"><b>Code Club Tutor, Canongate Primary School</b><span>OCTOBER 2025 – PRESENT</span></div>
+    <p>One of two teaching 13 primary school pupils aged 10-11 once a week. Deliver coding exercises for children using MakeCode, micro:bit, and Scratch.</p>
+
+    <h3>EXTRACURRICULAR</h3>
+    <div class="job"><b>Co-Founder &amp; President, <a href="#p-standrewsvcs">Volunteer Code Society</a></b><span>SEPTEMBER 2025 – PRESENT</span></div>
+    <p>Founded to lead student volunteers coding for our community. Manage two teams (total 40) making citizen-science projects. Project lead on <a href="#p-mitespotter-api">Mitespotter</a>, crowdsourcing a new dataset for training computer vision to automate parasite detection in apiculture. Technical lead on <a href="#p-koolskools-website">Koolskools</a>, designing a website and content strategy for a fairtrade clothing supplier.</p>
+    <div class="job"><b>Treasurer, St Andrews Baking Society</b><span>AUGUST 2025 – PRESENT</span></div>
+    <p>Finance a society of 100+ members. Recovered £800 made inaccessible by previous Committee.</p>
+    <div class="job"><b>Organiser, <a href="#p-gamejam">St Andrews Game Jam</a></b><span>SEPTEMBER 2026</span></div>
+    <p>Solo-organised a weeklong game jam with 30 developers, 7 submissions, £170 sponsored prize pool.</p>
+
+    <h3>SKILLS</h3>
+    <p><b>Programming Languages:</b> C, C++, C#, Python, Java, TypeScript (React, Hono), SQL, PHP, bash.</p>
+    <p><b>Developer Tools:</b> Linux, SLURM, PyTorch, LiteRT Micro, llamafile, Cloudflare (+wrangler), MATLAB.</p>
+    <p><b>Languages:</b> English (native), French (native), Spanish (intermediate), Flemish (beginner).</p>
+  </div>
+</dialog>
+
+<script>
+const cell = () => { document.documentElement.style.setProperty('--cell', (4 / (window.devicePixelRatio || 1)) + 'px');
+  matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener('change', cell, {once:true}); };
+cell();
+// Everything about the person and the site's own links lives here. An empty value draws nothing.
+const site = {
+  name: 'Maxence Morel Dierckx',
+  age: '',
+  email: 'mutantcacti@gmail.com',
+  bio: "it's good enough for me",   // the GitHub profile bio; the live site reads it from GitHub
+  interests: '',
+  about: '#',          // the page that says more about me; not built yet
+  links: [['GitHub', 'https://github.com/MutantCacti'], ['Résumé', ''], ['Blog', '']],
+};
+// Seed: every repository, flat. desc and pushed are GitHub's; a private one carries neither on purpose.
+const repos = [
+  {name:'nand-evolver',        priv:true},
+  {name:'rotateai-pipelines',  url:'https://github.com/MutantCacti/rotateai-pipelines', pushed:'2026-11-15', desc:'Inference pipelines for on-tag whale orientation correction.'},
+  {name:'rotateai-simulator',  url:'https://github.com/MutantCacti/rotateai-simulator', pushed:'2026-09-03', desc:'A simulator for RotateAI model inference on virtual microcontroller environments.'},
+  {name:'compendium',          missing:true},
+  {name:'standrewsvcs',        org:true, url:'https://github.com/standrewsvcs', pushed:'2026-11-19', title:'St Andrews VCS',
+     down:[{name:'design', url:'https://github.com/standrewsvcs/design'}, {name:'gamejam', priv:true, pushed:'2026-10-25'}, {name:'mitespotter-api', url:'https://github.com/standrewsvcs/mitespotter-api'}]},
+  {name:'koolskools-website',  url:'https://github.com/tamrachan/koolskools-website', pushed:'2026-11-06', title:'Kool Skools'},
+  {name:'roll-call',           missing:true},
+  {name:'grav2d',              url:'https://github.com/MutantCacti/grav2d', pushed:'2026-06-02'},
+  {name:'Caretaker',           url:'https://github.com/MutantCacti/Caretaker', pushed:'2024-04-04'},
+  {name:'freetime',            url:'https://github.com/MutantCacti/freetime', pushed:'2026-11-09', desc:'A read-only view of my free time in the style of when2meet'},
+  {name:'icpc-2026',           url:'https://github.com/MutantCacti/icpc-2026', pushed:'2026-10-27'},
+  {name:'seasons-game',        url:'https://github.com/MutantCacti/seasons-game', pushed:'2026-09-28'},
+  {name:'shelf',               url:'https://github.com/MutantCacti/shelf', pushed:'2026-09-07', desc:'A website for sending things to yourself'},
+  {name:'mlql',                url:'https://github.com/MutantCacti/mlql', pushed:'2026-09-06', desc:'Graph-based cellular automata in C with evolutionary rule learning.'},
+  {name:'graph',               url:'https://github.com/MutantCacti/graph', pushed:'2026-06-18', desc:'A relational database serving a graph of functions connected by membership to shared spaces'},
+  {name:'graph-turing',        url:'https://github.com/MutantCacti/graph-turing', pushed:'2026-06-14', desc:'A simple proof of Turing completeness for graph using XOR, IF and FOR'},
+  {name:'city',                url:'https://github.com/MutantCacti/city', pushed:'2026-06-02', desc:'A controlled environment for observing LLM societies.'},
+  {name:'cells',               url:'https://github.com/MutantCacti/cells', pushed:'2026-06-02', desc:'Unsupervised int64-valued transformers form a self-predicting autoencoder'},
+  {name:'varroa-mite-counter', url:'https://github.com/tamrachan/varroa-mite-counter', pushed:'2026-04-18'},
+  {name:'mutantcacti',         url:'https://github.com/MutantCacti/mutantcacti', pushed:'2026-03-22'},
+  {name:'O',                   url:'https://github.com/MutantCacti/O', pushed:'2025-12-19', desc:'A minimal runtime for autonomous entities.'},
+  {name:'edutracker',          url:'https://github.com/MutantCacti/edutracker', pushed:'2023-02-28'},
+];
+// Home order: names. The first three are the top row, the rest are the list. Anything not named falls to the bottom.
+const order = ['nand-evolver', 'rotateai-pipelines', 'compendium', 'standrewsvcs', 'shelf', 'koolskools-website', 'roll-call', 'grav2d', 'Caretaker'];
+const titles = {'nand-evolver':'NAND Evolver', 'rotateai-pipelines':'Rotate AI Pipelines', 'compendium':'Compendium', 'roll-call':'Roll Call', 'grav2d':'Grav2D'};
+
+const by = Object.fromEntries(repos.map(r => [r.name, r]));
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const title = r => r.title || titles[r.name] || r.name;
+const when = r => r.pushed ? new Date(r.pushed + 'T00:00:00Z').toLocaleDateString('en-GB', {month:'short', year:'numeric', timeZone:'UTC'}) : '';
+function nameNode(r) {
+  if (r.url && !r.priv) { const a = el('a', null, title(r)); a.href = r.url; return a; }
+  return document.createTextNode(title(r));
+}
+const note = r => r.notes || (r.priv ? '' : r.desc) || '';   // a private item never shows GitHub's description
+function whenNode(r, tag) {
+  const e = el(tag, 'when');
+  e.textContent = [r.priv && 'private', when(r)].filter(Boolean).join(' · ');
+  return e;
+}
+function topCard(r) {
+  const li = el('li'); li.id = 'p-' + r.name;
+  const h = el('h2'); h.append(nameNode(r)); li.append(h);
+  if (note(r)) li.append(el('p', 'note', note(r)));
+  li.append(whenNode(r, 'p'));
+  return li;
+}
+function row(r) {
+  const li = el('li'); li.id = 'p-' + r.name;
+  const n = el('span', 'name');
+  if (r.pic) { const i = el('img', 'pic'); i.src = r.pic; i.alt = ''; n.append(i); }
+  n.append(nameNode(r)); li.append(n);
+  li.append(el('span', 'note', note(r)));
+  li.append(whenNode(r, 'span'));
+  if (r.down && !r.priv) {
+    const ul = el('ul', 'kids');
+    for (const k of r.down) { const kli = el('li'); kli.id = 'p-' + k.name; const kn = el('span', 'name'); kn.append(nameNode(k)); kli.append(kn); kli.append(whenNode(k, 'span')); ul.append(kli); }
+    li.append(ul);
+  }
+  return li;
+}
+function small(r) {
+  const li = el('li'); li.id = 'p-' + r.name;
+  const n = el('span', 'name'); n.append(nameNode(r)); li.append(n);
+  li.append(whenNode(r, 'span'));
+  if (note(r)) li.append(el('span', 'note', note(r)));
+  return li;
+}
+const links = site.links.filter(([, url]) => url).map(([text, url]) => { const a = el('a', null, text); a.href = url; return a; });
+const cv = document.getElementById('cv');
+const open = el('button', 'open', 'Résumé'); open.type = 'button'; const shut = document.getElementById('shut');
+open.onclick = () => { const r = open.getBoundingClientRect(); shut.style.top = r.top + 'px'; shut.style.left = r.left + 'px'; shut.style.right = 'auto'; shut.style.minWidth = r.width + 'px'; cv.showModal(); };
+document.getElementById('nav').append(open);
+cv.addEventListener('click', e => { if (e.target.closest('a[href^="#"]')) cv.close(); });   // a link into the page closes the résumé first
+const me = document.getElementById('me');
+document.getElementById('about').href = site.about;
+for (const [label, value, cls] of [['Name', site.name, 'who'], ['Bio', site.bio, 'bio'], ['Age', site.age], ['Email', site.email, 'sel'], ['Research interests', site.interests]])
+  if (value) { const dd = el('dd', cls, value); if (cls === 'who') { const a = el('a', null, value); a.href = site.about; dd.replaceChildren(a); } me.append(el('dt', null, label), dd); }
+if (links.length) { const dd = el('dd', 'links'); dd.append(...links); me.append(el('dt', null, 'Links'), dd); }
+document.getElementById('top').append(...order.slice(0, 3).map(n => topCard(by[n])));
+document.getElementById('list').append(...order.slice(3).map(n => row(by[n])));
+const rest = repos.filter(r => !order.includes(r.name)).sort((a, b) => (b.pushed || '').localeCompare(a.pushed || ''));
+document.getElementById('rest').append(...rest.map(small));
+</script>
